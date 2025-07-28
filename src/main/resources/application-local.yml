@@ -4,3 +4,5 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+server:
+  url: ${SERVER_LOCAL_URL}

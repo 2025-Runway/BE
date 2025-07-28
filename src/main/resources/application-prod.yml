@@ -9,7 +9,7 @@ spring:
 
 management:
   server:
-    base-path: /
+    base-path: /actuator/health
   endpoints:
     web:
       exposure:
@@ -22,3 +22,6 @@ management:
           DOWN: 503
           OUT_OF_SERVICE: 503
           UNKNOWN: 500
+
+server:
+  url: ${SERVER_PROD_URL}
