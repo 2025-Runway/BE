@@ -49,12 +49,11 @@ dependencies {
 
 
 	// swagger
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.7.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	//s3
-	implementation group: 'software.amazon.awssdk', name: 's3', version: "2.20.68"
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
 	// actuator
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'

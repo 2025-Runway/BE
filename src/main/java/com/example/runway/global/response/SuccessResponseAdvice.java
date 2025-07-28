@@ -17,7 +17,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 @RestControllerAdvice
 public class SuccessResponseAdvice implements ResponseBodyAdvice<Object> {
 
-    private static final String[] ESCAPE_PATTERNS = {"/v3/api-docs"};
+    private static final String[] ESCAPE_PATTERNS = {
+            "/v3/api-docs",
+            "/swagger-ui",
+            "/swagger-ui.html",
+            "/swagger-resources",
+            "/webjars"
+    };
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {

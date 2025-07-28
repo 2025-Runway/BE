@@ -17,6 +17,10 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    private final String[] SwaggerPatterns = {
+            "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/images"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -25,10 +29,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/signup", "/", "/login", "/Oauth2/**")
                         .permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                        .requestMatchers(SwaggerPatterns)
                         .permitAll()
                         .requestMatchers("/actuator/health")
-                        .permitAll())
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable);
 

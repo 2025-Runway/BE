@@ -29,6 +29,7 @@ spring:
     aws:
       s3:
         bucket: ${BUCKET_NAME}
+
       stack.auto: false
       region.static: ap-northeast-2
       credentials:
