@@ -28,8 +28,10 @@ jobs:
 
       - name: Make application-secret.yml without env
         run: |
-          sudo curl -o application.yml https://raw.githubusercontent.com/2025-Runway/BE/main/src/main/resources/application.yml
-          sudo curl -o application-prod.yml https://raw.githubusercontent.com/2025-Runway/BE/main/src/main/resources/application-prod.yml
+          touch ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
+          touch ./src/main/resources/application-prod.yml
+          echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
 
       # JDK version 설정
       - name: Set up JDK 17
