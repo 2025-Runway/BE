@@ -1,0 +1,39 @@
+name: "🐞 Bug"
+description: "버그 신고"
+title: "[Bug] "
+labels: ["bug"]
+assignees: []
+body:
+  - type: textarea
+    attributes:
+      label: "🔍 버그 설명"
+      description: "어떤 문제가 발생했는지 자세히 적어주세요."
+      placeholder: "예: 버튼을 눌러도 반응이 없습니다."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "⚙ 재현 방법"
+      description: "어떻게 하면 이 버그를 재현할 수 있는지 단계별로 적어주세요."
+      placeholder: |
+        1. 로그인 페이지로 이동
+        2. 아이디만 입력하고 로그인 버튼 클릭
+        3. 에러 발생
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "📸 스크린샷 또는 로그"
+      description: "가능하면 에러 메시지, 콘솔 로그, 스크린샷을 첨부해주세요."
+    validations:
+      required: false
+
+  - type: input
+    attributes:
+      label: "💻 환경"
+      description: "어떤 환경에서 발생했나요?"
+      placeholder: "예: Chrome 114 / macOS Ventura 13.5"
+    validations:
+      required: false

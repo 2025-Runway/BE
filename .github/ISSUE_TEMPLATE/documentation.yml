@@ -1,0 +1,28 @@
+name: "📚 Docs"
+description: "문서 추가 또는 수정"
+title: "[Docs] "
+labels: ["documentation"]
+assignees: []
+body:
+  - type: textarea
+    attributes:
+      label: "📄 어떤 문서를 수정/추가하나요?"
+      description: "수정 또는 작성할 문서에 대해 설명해주세요."
+      placeholder: "예: README.md의 설치 방법 업데이트"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "📝 변경 내용"
+      description: "문서에 어떤 내용을 추가하거나 수정할 예정인지 작성해주세요."
+      placeholder: "예: 기존 설치 방법이 잘못되어 경로 수정"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "🔗 참고 자료"
+      description: "참고한 외부 자료나 링크가 있다면 작성해주세요."
+    validations:
+      required: false

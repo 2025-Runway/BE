@@ -1,0 +1,29 @@
+name: "🛠️ Refactor"
+description: "리팩터링 작업 제안"
+title: "[Refactor] "
+labels: ["refactor"]
+assignees: []
+body:
+  - type: textarea
+    attributes:
+      label: "📄 설명"
+      description: "리팩터링이 필요한 이유를 설명해주세요."
+      placeholder: "예: 중복된 코드 제거, 메서드 분리 등"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "🧹 대상 코드"
+      description: "리팩터링이 필요한 파일이나 모듈을 적어주세요."
+      placeholder: "예: UserService.java"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "🎯 기대 효과"
+      description: "리팩터링 후 기대되는 효과를 적어주세요."
+      placeholder: "예: 가독성 향상, 유지보수성 향상 등"
+    validations:
+      required: false

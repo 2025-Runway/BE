@@ -1,0 +1,21 @@
+name: "❓ Question"
+description: "질문 또는 논의가 필요할 때"
+title: "[Question] "
+labels: ["question"]
+assignees: []
+body:
+  - type: textarea
+    attributes:
+      label: "❓ 궁금한 점"
+      description: "무엇이 궁금한지 명확하게 적어주세요."
+      placeholder: "예: 이 함수에서 리턴 타입을 바꿔도 될까요?"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "💬 추가 설명"
+      description: "필요한 경우 맥락이나 배경을 설명해주세요."
+      placeholder: "예: 다른 코드와의 연관성 등"
+    validations:
+      required: false

@@ -1,0 +1,29 @@
+name: "🚨 Hotfix"
+description: "긴급하게 수정이 필요한 이슈"
+title: "[Hotfix] "
+labels: ["hotfix", "bug"]
+assignees: []
+body:
+  - type: textarea
+    attributes:
+      label: "🔥 문제 요약"
+      description: "지금 당장 수정이 필요한 문제를 간단히 요약해주세요."
+      placeholder: "예: 로그인 시 서버 에러 발생"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "⏱ 영향도"
+      description: "이 문제가 서비스에 어떤 영향을 주는지 적어주세요."
+      placeholder: "예: 전체 사용자 로그인이 불가능함"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "🧪 임시 대응/재현 방법"
+      description: "임시 대응 방법이나 재현 가능한 방법이 있다면 적어주세요."
+      placeholder: "예: F5 새로고침 시 임시 해결 가능"
+    validations:
+      required: false
