@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/signup", "/", "/login", "/Oauth2/**")
+                        .requestMatchers("/signup", "/", "/login", "/Oauth2/**","/auth/**")
                         .permitAll()
                         .requestMatchers(SwaggerPatterns)
                         .permitAll()

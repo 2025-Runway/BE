@@ -36,6 +36,11 @@ spring:
         accessKey: ${S3_ACCESS_KEY}
         secretKey: ${S3_SECRET_KEY}
 
+  kakao:
+    auth:
+      client: ${KAKAO_REST_API_KEY}
+      redirect: ${KAKAO_REDIRECT_URI}
+
 
 
 logging:
