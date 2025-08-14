@@ -51,10 +51,6 @@ public class AuthService {
 
         //TODO - 4) 유저저장
         User user = userRepository.findByKakaoId(kakaoId)
-                .map(u -> {
-                    u.updateProfile(nickname, email, profileImageUrl);  //이미 가입된 계정인 경우 프로필 업데이트
-                    return u;
-                })
                 .orElseGet(() ->
                         User.builder()
                                 .kakaoId(kakaoId)
