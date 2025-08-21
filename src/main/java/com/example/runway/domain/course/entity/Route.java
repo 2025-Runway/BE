@@ -20,10 +20,10 @@ public class Route extends BaseEntity {
     @Column(name = "theme_nm", nullable = false)
     private String themeNm;
 
-    @Column(name = "line_msg", nullable = false)
+    @Column(name = "line_msg", nullable = false, columnDefinition = "TEXT")
     private String lineMsg;
 
-    @Column(name = "theme_descs", nullable = false)
+    @Column(name = "theme_descs", nullable = false, columnDefinition = "TEXT")
     private String themeDescs;
 
     @Enumerated(EnumType.STRING)
