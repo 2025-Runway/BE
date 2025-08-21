@@ -27,8 +27,8 @@ public class JwtProvider {
     public String createAccessToken(String subject, Map<String, Object> claims) {
         Instant now = Instant.now();
         return Jwts.builder()
-                .setSubject(subject)
                 .setClaims(claims)
+                .setSubject(subject)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(accessExpSeconds)))
                 .signWith(signingKey, SignatureAlgorithm.HS256)
