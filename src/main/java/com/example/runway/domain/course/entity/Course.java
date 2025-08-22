@@ -21,8 +21,8 @@ public class Course extends BaseEntity {
     @Column(name = "crs_kor_nm", nullable = false)
     private String crsKorNm;
 
-    @Column(name = "crs_dstnc", nullable = false, precision = 5, scale = 2)
-    private BigDecimal crsDstnc;
+    @Column(name = "crs_dstnc", nullable = false)
+    private int crsDstnc;
 
     @Column(name = "crs_totl_rqrm_hour", nullable = false)
     private int crsTotlRrrmHour;
@@ -31,7 +31,7 @@ public class Course extends BaseEntity {
     private int crsLevel;
 
     @Column(name = "crs_cycle", nullable = false)
-    private int crsCycle;
+    private String crsCycle;
 
     @Column(name = "crs_contents", nullable = true, columnDefinition = "TEXT")
     private String crsContents;
