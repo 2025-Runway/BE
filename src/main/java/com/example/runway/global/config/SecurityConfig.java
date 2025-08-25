@@ -42,8 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health")
                         .permitAll()
                         .anyRequest().authenticated())
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable);
+                .formLogin(AbstractHttpConfigurer::disable);
 
         //JWT 필터 추가
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
