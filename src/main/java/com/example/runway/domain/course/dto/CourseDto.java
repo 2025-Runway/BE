@@ -1,5 +1,6 @@
 package com.example.runway.domain.course.dto;
 
+import com.example.runway.domain.course.entity.BrdDiv;
 import com.example.runway.domain.course.entity.Course;
 
 import java.math.BigDecimal;
@@ -11,7 +12,7 @@ public record CourseDto(
         String crsKorNm,
         Integer crsDstnc,
         Integer crsTotlRqrmHour,
-        Byte crsLevel,
+        Integer crsLevel,
         String crsCycle,
 
         String crsContents,
@@ -20,7 +21,7 @@ public record CourseDto(
         String travelerinfo,
 
         String sigun,
-        Course.BrdDiv brdDiv,
+        BrdDiv brdDiv,
         String gpxFilePath,
         String crsImg,
 
@@ -30,7 +31,7 @@ public record CourseDto(
     public static CourseDto from(Course c) {
         return new CourseDto(
                 c.getCrsIdx(),
-                c.getRouteIdx(),
+                c.getRoute().getRouteIdx(),
                 c.getCrsKorNm(),
                 c.getCrsDstnc(),
                 c.getCrsTotlRqrmHour(),
@@ -40,15 +41,15 @@ public record CourseDto(
                 c.getCrsContents(),
                 c.getCrsSummary(),
                 c.getCrsTourInfo(),
-                c.getTravelerinfo(),
+                c.getTravelerInfo(),
 
                 c.getSigun(),
                 c.getBrdDiv(),
-                c.getGpxFilePath(),
-                c.getCrsImg(),
+                c.getGpxPath(),
+                c.getCrsImgUrl(),
 
-                c.getCreated_at(),
-                c.getUpdated_at()
+                c.getCreatedTime(),
+                c.getModifiedTime()
         );
     }
 }

@@ -1,20 +1,19 @@
 package com.example.runway.domain.auth.service;
 
 import com.example.runway.domain.auth.dto.LoginResponse;
-import com.example.runway.domain.user.User;
-import com.example.runway.domain.user.UserRepository;
+import com.example.runway.domain.user.entity.User;
+import com.example.runway.domain.user.repository.UserRepository;
+import com.example.runway.domain.user.entity.UserStatus;
 import com.example.runway.global.jwt.JwtProvider;
 import com.example.runway.infra.kakao.KakaoOAuthClient;
 import com.example.runway.infra.kakao.dto.KakaoTokenResponseDto;
 import com.example.runway.infra.kakao.dto.KakaoUserInfoResponseDto;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.util.Map;
 
 @Slf4j
@@ -57,7 +56,7 @@ public class AuthService {
                                 .email(email)
                                 .nickname(nickname)
                                 .profileImageUrl(profileImageUrl)
-                                .status(com.example.runway.domain.user.UserStatus.ACTIVE)
+                                .status(UserStatus.ACTIVE)
                                 .build()
                 );
 

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "routes")
-public class Route extends BaseEntity {
+public class Route {
     @Id
     @Column(name = "route_idx", nullable = false, unique = true)
     private String routeIdx;
@@ -35,4 +36,7 @@ public class Route extends BaseEntity {
 
     @Column(name = "modified_time", nullable = true)
     private LocalDateTime modifiedTime;
+
+    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL) // Course 엔티티의 'route' 필드에 매핑
+    private List<Course> courses;
 }

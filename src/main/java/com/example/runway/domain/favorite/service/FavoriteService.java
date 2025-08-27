@@ -1,14 +1,13 @@
 package com.example.runway.domain.favorite.service;
 
-import com.amazonaws.util.FakeIOException;
 import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.course.error.CourseFailed;
 import com.example.runway.domain.course.repository.CourseRepository;
 import com.example.runway.domain.favorite.entity.Favorite;
 import com.example.runway.domain.favorite.error.FavoriteFailed;
 import com.example.runway.domain.favorite.repository.FavoriteRepository;
-import com.example.runway.domain.user.User;
-import com.example.runway.domain.user.UserRepository;
+import com.example.runway.domain.user.entity.User;
+import com.example.runway.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

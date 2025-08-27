@@ -4,7 +4,6 @@ import com.example.runway.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "courses")
-public class Course extends BaseEntity {
+public class Course {
     @Id
     @Column(name = "crs_idx", nullable = false, unique = true)
     private String crsIdx;
@@ -25,7 +24,7 @@ public class Course extends BaseEntity {
     private int crsDstnc;
 
     @Column(name = "crs_totl_rqrm_hour", nullable = false)
-    private int crsTotlRrrmHour;
+    private int crsTotlRqrmHour;
 
     @Column(name = "crs_level", nullable = false, columnDefinition = "TINYINT")
     private int crsLevel;
@@ -63,4 +62,8 @@ public class Course extends BaseEntity {
 
     @Column(name = "modified_time", nullable = true)
     private LocalDateTime modifiedTime;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "route_idx") // Route 엔티티의 기본키(route_idx)를 외래키로 연결
+    private Route route;
 }

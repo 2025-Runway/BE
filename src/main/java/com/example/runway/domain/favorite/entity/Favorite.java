@@ -1,7 +1,7 @@
 package com.example.runway.domain.favorite.entity;
 
 import com.example.runway.domain.course.entity.Course;
-import com.example.runway.domain.user.User;
+import com.example.runway.domain.user.entity.User;
 import com.example.runway.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,5 +1,6 @@
-package com.example.runway.domain.user;
+package com.example.runway.domain.user.repository;
 
+import com.example.runway.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
