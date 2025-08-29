@@ -1,14 +1,17 @@
 package com.example.runway.domain.course.service;
 
 import com.example.runway.domain.course.dto.CourseDto;
+import com.example.runway.domain.course.dto.PopularCourseDto;
 import com.example.runway.domain.course.dto.RecentCourseDto;
 import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.course.error.CourseFailed;
+import com.example.runway.domain.course.error.PopularCourseNotFound;
 import com.example.runway.domain.course.repository.CourseRepository;
 import com.example.runway.domain.user.entity.User;
 import com.example.runway.domain.user.exception.UserFailed;
 import com.example.runway.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +19,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -76,5 +81,28 @@ public class CourseService {
                 lastViewedCourse.getCrsDstnc(),
                 formattedDate
         ));
+    }
+
+    /**
+     * 인기 코스 목록을 조회하는 메소드 (찜 많은 순)
+     */
+    @Transactional(readOnly = true)
+    public List<PopularCourseDto> getPopularCourses(int size) {
+        PageRequest pageRequest = PageRequest.of(0, size);
+        List<Course> popularCourses = courseRepository.findPopularCourses(pageRequest);
+
+        if (popularCourses.isEmpty()) {
+            throw PopularCourseNotFound.Exception;
+        }
+
+        // Course 엔티티를 PopularCourseDto 레코드로 변환합니다.
+        return popularCourses.stream()
+                .map(course -> new PopularCourseDto(
+                        course.getSigun(),
+                        course.getCrsKorNm(),
+                        course.getCrsIdx(),
+                        course.getCrsImgUrl()
+                ))
+                .collect(Collectors.toList());
     }
 }
