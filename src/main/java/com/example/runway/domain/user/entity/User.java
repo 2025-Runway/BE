@@ -1,12 +1,8 @@
-package com.example.runway.domain.user;
+package com.example.runway.domain.user.entity;
 
 import com.example.runway.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(

@@ -4,5 +4,12 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+  jpa:
+    hibernate:
+      ddl-auto: update   # create, create-drop, update, validate, none 중 하나
+    properties:
+      hibernate:
+        format_sql: true
+
 server:
   url: ${SERVER_LOCAL_URL}
