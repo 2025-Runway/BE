@@ -41,6 +41,9 @@ public class User extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private UserStatus status = UserStatus.ACTIVE;
 
+    @Column(name = "destination", nullable = true, columnDefinition = "VARCHAR(255) DEFAULT ''")
+    private String destination;
+
 
 
     public void updateProfile(String nickname, String email, String profileImageUrl) {
