@@ -19,6 +19,16 @@ public class WeatherConfig {
     @Value("${airkorea.api.dataUrl}")
     private String airKoreaDataUrl;
 
+    @Value("${kma.api.livingWeatherUrl}") // 자외선 API URL
+    private String livingWeatherUrl;
+
+    @Value("${vworld.api.key}")
+    private String vworldApiKey;
+
+    @Value("${vworld.api.url}")
+    private String vworldApiUrl;
+
+
     public record AirKoreaApiProperties(String stationUrl, String dataUrl, String serviceKey) {}
 
     @Bean
@@ -31,5 +41,20 @@ public class WeatherConfig {
     @Bean
     public WeatherApiProperties weatherApiProperties() {
         return new WeatherApiProperties(serviceKey, baseUrl);
+    }
+
+    // 자외선 지수 API
+    public record KmaLivingWeatherApiProperties(String serviceKey, String baseUrl) {}
+
+    @Bean
+    public KmaLivingWeatherApiProperties kmaLivingWeatherApiProperties() {
+        return new KmaLivingWeatherApiProperties(serviceKey, livingWeatherUrl);
+    }
+
+
+    public record ReverseGeocodingApiProperties(String apiKey, String apiUrl) {}
+    @Bean
+    public ReverseGeocodingApiProperties reverseGeocodingApiProperties() {
+        return new ReverseGeocodingApiProperties(vworldApiKey, vworldApiUrl);
     }
 }
