@@ -1,0 +1,49 @@
+package com.example.runway.domain.weather.controller;
+
+
+import com.example.runway.domain.weather.dto.WeatherDetailResponse;
+import com.example.runway.domain.weather.dto.WeatherResponseDto;
+import com.example.runway.domain.weather.dto.WeeklyWeatherDto;
+import com.example.runway.domain.weather.service.WeatherService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/public/weather")
+public class WeatherController {
+
+    private final WeatherService weatherService;
+
+    @GetMapping
+    public ResponseEntity<WeatherResponseDto> getWeather(
+            @RequestParam("lat") double lat, // 위도
+            @RequestParam("lon") double lon) { // 경도
+
+        WeatherResponseDto weatherDto = weatherService.getWeather(lat, lon);
+        return ResponseEntity.ok(weatherDto);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<WeatherDetailResponse> getWeatherDetails(
+            @RequestParam("lat") double lat,
+            @RequestParam("lon") double lon) {
+        WeatherDetailResponse weatherDetailResponse = weatherService.getWeatherDetails(lat, lon);
+        return ResponseEntity.ok(weatherDetailResponse);
+    }
+
+    @GetMapping("/weekly")
+    public ResponseEntity<List<WeeklyWeatherDto>> getWeeklyWeather(
+            @RequestParam("lat") double lat,
+            @RequestParam("lon") double lon) {
+        List<WeeklyWeatherDto> weeklyWeather = weatherService.getWeeklyWeather(lat, lon);
+        return ResponseEntity.ok(weeklyWeather);
+    }
+}
