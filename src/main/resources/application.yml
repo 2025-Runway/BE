@@ -48,6 +48,8 @@ kma:
     serviceKey: ${KMA_SERVICE_KEY}
     baseUrl: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
     livingWeatherUrl: http://apis.data.go.kr/1360000/LivingWthrIdxServiceV4
+    midTermBaseUrl: http://apis.data.go.kr/1360000/MidFcstInfoService
+
 
 
 # 미세먼지 받아오기 위한 api url
