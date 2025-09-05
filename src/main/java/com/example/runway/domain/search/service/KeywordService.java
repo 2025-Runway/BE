@@ -19,4 +19,8 @@ public class KeywordService {
                 .map(KeywordDto::from)
                 .toList();
     }
+
+    public void deleteKeyword(Long userId, Long keywordId) {
+        keywordRepository.deleteByUserIdAndKeywordId(userId, keywordId);
+    }
 }
