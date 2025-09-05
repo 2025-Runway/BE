@@ -22,4 +22,12 @@ public class SearchKeywordValidator {
             throw NoSearchResult.EXCEPTION;
         }
     }
+
+    public boolean userValidate(Long userId) {
+        if (userId == null) {
+            return false;
+        }
+        return true;
+    }
+
 }

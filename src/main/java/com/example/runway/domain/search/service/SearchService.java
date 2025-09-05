@@ -4,6 +4,7 @@ import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.search.dto.SearchCourseDto;
 import com.example.runway.domain.search.dto.SearchCoursesDto;
 import com.example.runway.domain.search.error.NotFoundCourse;
+import com.example.runway.domain.search.repository.KeywordRepository;
 import com.example.runway.domain.search.repository.SearchRepository;
 import com.example.runway.domain.search.validator.SearchKeywordValidator;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 public class SearchService {
     private final SearchRepository searchRepository;
     private final SearchKeywordValidator searchKeywordValidator;
+    private final KeywordRepository keywordRepository;
 
     public List<SearchCoursesDto> coursesSearch(String q) {
         searchKeywordValidator.keywordExistValidate(q);
