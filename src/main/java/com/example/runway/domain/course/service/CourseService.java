@@ -1,5 +1,6 @@
 package com.example.runway.domain.course.service;
 
+import com.example.runway.domain.course.dto.CourseAnalysisDto;
 import com.example.runway.domain.course.dto.CourseDto;
 import com.example.runway.domain.course.dto.PopularCourseDto;
 import com.example.runway.domain.course.dto.RecentCourseDto;
@@ -10,6 +11,7 @@ import com.example.runway.domain.course.repository.CourseRepository;
 import com.example.runway.domain.user.entity.User;
 import com.example.runway.domain.user.exception.UserFailed;
 import com.example.runway.domain.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -29,6 +32,9 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final GeminiService geminiService;
+    private final ObjectMapper objectMapper;
+
 
 
     public CourseDto getById(String crsIdx) {
@@ -104,5 +110,25 @@ public class CourseService {
                         course.getCrsImgUrl()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * crsIdx로 코스를 찾아 AI 분석을 요청하고, 최종 DTO를 반환합니다.
+     * @param crsIdx 코스 ID
+     * @return CourseAnalysisDto
+     */
+    public CourseAnalysisDto getCourseAnalysisById(String crsIdx) {
+        Course course = courseRepository.findByCrsIdx(crsIdx)
+                .orElseThrow(() -> new IllegalArgumentException("해당 코스를 찾을 수 없습니다. id=" + crsIdx));
+
+        try {
+            String jsonResponse = geminiService.generateCourseAnalysis(course);
+
+            return objectMapper.readValue(jsonResponse, CourseAnalysisDto.class);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("AI 코스 분석 중 오류가 발생했습니다.");
+        }
     }
 }

@@ -7,8 +7,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CourseRepository extends JpaRepository<Course, String>, JpaSpecificationExecutor<Course> {
     @Query("SELECT f.course FROM Favorite f GROUP BY f.course ORDER BY COUNT(f.course) DESC")
     List<Course> findPopularCourses(Pageable pageable);
+
+    Optional<Course> findByCrsIdx(String crsIdx);
+
 }

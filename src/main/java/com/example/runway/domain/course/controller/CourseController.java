@@ -1,5 +1,6 @@
 package com.example.runway.domain.course.controller;
 
+import com.example.runway.domain.course.dto.CourseAnalysisDto;
 import com.example.runway.domain.course.dto.CourseDto;
 import com.example.runway.domain.course.dto.PopularCourseDto;
 import com.example.runway.domain.course.dto.RecentCourseDto;
@@ -44,5 +45,12 @@ public class CourseController {
     public ResponseEntity<List<PopularCourseDto>> getPopularCourses() {
         List<PopularCourseDto> result = courseService.getPopularCourses(10);
         return ResponseEntity.ok(result);
+    }
+
+    // 코스 개요
+    @GetMapping("/public/courses/{crsIdx}/analysis")
+    public ResponseEntity<CourseAnalysisDto> getCourseAnalysis(@PathVariable String crsIdx) {
+        CourseAnalysisDto analysisDto = courseService.getCourseAnalysisById(crsIdx);
+        return ResponseEntity.ok(analysisDto);
     }
 }
