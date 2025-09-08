@@ -64,7 +64,10 @@ vworld:
     key: ${VWORLD_API_KEY}
     url: http://api.vworld.kr/req/address
 
-
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+    url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
 
 
 logging:
