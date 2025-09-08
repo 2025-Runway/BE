@@ -1,6 +1,7 @@
 package com.example.runway.domain.weather.controller;
 
 
+import com.example.runway.domain.weather.dto.WeatherDetailResponse;
 import com.example.runway.domain.weather.dto.WeatherResponseDto;
 import com.example.runway.domain.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,13 @@ public class WeatherController {
 
         WeatherResponseDto weatherDto = weatherService.getWeather(lat, lon);
         return ResponseEntity.ok(weatherDto);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<WeatherDetailResponse> getWeatherDetails(
+            @RequestParam("lat") double lat,
+            @RequestParam("lon") double lon) {
+        WeatherDetailResponse weatherDetailResponse = weatherService.getWeatherDetails(lat, lon);
+        return ResponseEntity.ok(weatherDetailResponse);
     }
 }

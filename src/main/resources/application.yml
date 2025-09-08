@@ -47,12 +47,22 @@ kma:
   api:
     serviceKey: ${KMA_SERVICE_KEY}
     baseUrl: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+    livingWeatherUrl: http://apis.data.go.kr/1360000/LivingWthrIdxServiceV4
+
 
 # 미세먼지 받아오기 위한 api url
 airkorea:
   api:
     stationUrl: http://apis.data.go.kr/B552584/MsrstnInfoInqireSvc
     dataUrl: http://apis.data.go.kr/B552584/ArpltnInforInqireSvc
+
+# VWorld API (좌표 -> 주소 변환)
+vworld:
+  api:
+    key: ${VWORLD_API_KEY}
+    url: http://api.vworld.kr/req/address
+
+
 
 
 logging:
