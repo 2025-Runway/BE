@@ -58,6 +58,10 @@ dependencies {
 
 	// actuator
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	//위도,경도 변환
+	implementation 'org.locationtech.proj4j:proj4j:1.2.1'
+
 }
 
 tasks.named('test') {
