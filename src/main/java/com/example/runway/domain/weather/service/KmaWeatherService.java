@@ -10,6 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -112,5 +113,42 @@ public class KmaWeatherService {
             LocalTime baseTime = time.getMinute() < 45 ? time.minusHours(1) : time;
             return new BaseDateTime(date.format(dateFormatter), baseTime.format(DateTimeFormatter.ofPattern("HH30")));
         }
+    }
+
+    public List<Map<String, Object>> fetchShortTermForecastData(String nx, String ny) {
+        BaseDateTime dateTime = getBaseDateTimeForShortTerm();
+        URI uri = UriComponentsBuilder
+                .fromUriString(weatherApiProperties.baseUrl() + "/getVilageFcst")
+                .queryParam("serviceKey", weatherApiProperties.serviceKey())
+                .queryParam("numOfRows", "1000") // 3일치 데이터를 모두 받기 위해 넉넉하게 설정
+                .queryParam("pageNo", "1")
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", dateTime.baseDate)
+                .queryParam("base_time", dateTime.baseTime)
+                .queryParam("nx", nx)
+                .queryParam("ny", ny)
+                .build(true).toUri();
+        try {
+            Map<String, Object> responseMap = restTemplate.getForObject(uri, Map.class);
+            return extractItems(responseMap);
+        } catch (Exception e) {
+            log.error("Failed to fetch short-term forecast data. The original error was:", e);
+            throw WeatherApiFailedException.EXCEPTION;
+        }
+    }
+
+    private BaseDateTime getBaseDateTimeForShortTerm() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalTime baseTime = LocalTime.of(2, 0);
+        // API는 3시간 간격으로 2시, 5시, 8시...에 예보를 제공. 현재 시간에서 가장 가까운 과거의 예보 시각을 찾음.
+        while (baseTime.isBefore(now.toLocalTime().minusHours(3))) {
+            baseTime = baseTime.plusHours(3);
+        }
+        // 만약 현재 시간이 새벽 0~2시 사이라면, 예보는 전날 23시 것을 사용해야 함
+        if (now.getHour() < 2) {
+            now = now.minusDays(1);
+            baseTime = LocalTime.of(23,0);
+        }
+        return new BaseDateTime(now.format(DateTimeFormatter.ofPattern("yyyyMMdd")), baseTime.format(DateTimeFormatter.ofPattern("HHmm")));
     }
 }

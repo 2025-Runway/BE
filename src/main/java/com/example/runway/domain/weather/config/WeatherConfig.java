@@ -14,6 +14,9 @@ public class WeatherConfig {
     @Value("${kma.api.baseUrl}")
     private String baseUrl;
 
+    @Value("${kma.api.midTermBaseUrl}")
+    private String midTermBaseUrl;
+
     @Value("${airkorea.api.stationUrl}")
     private String airKoreaStationUrl;
     @Value("${airkorea.api.dataUrl}")
@@ -56,5 +59,13 @@ public class WeatherConfig {
     @Bean
     public ReverseGeocodingApiProperties reverseGeocodingApiProperties() {
         return new ReverseGeocodingApiProperties(vworldApiKey, vworldApiUrl);
+    }
+
+    //중기예보 API 속성 Bean 추가
+    public record KmaMidTermApiProperties(String serviceKey, String baseUrl) {}
+
+    @Bean
+    public KmaMidTermApiProperties kmaMidTermApiProperties() {
+        return new KmaMidTermApiProperties(serviceKey, midTermBaseUrl);
     }
 }
