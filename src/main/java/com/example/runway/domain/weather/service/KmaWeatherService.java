@@ -30,6 +30,7 @@ public class KmaWeatherService {
     private record BaseDateTime(String baseDate, String baseTime) {}
 
     public Map<String, String> fetchWeatherData(String endpoint, String nx, String ny) {
+        // 각 API 엔드포인트에 맞는 조회 가능 시간을 계산
         BaseDateTime baseDateTime = getBaseDateTime(endpoint);
 
         URI uri = UriComponentsBuilder
@@ -62,7 +63,7 @@ public class KmaWeatherService {
                 .collect(Collectors.toMap(
                         item -> (String) item.get("category"),
                         item -> Objects.toString(item.get("obsrValue"), (String) item.get("fcstValue")),
-                        (existingValue, newValue) -> existingValue
+                        (existingValue, newValue) -> existingValue // 중복 키 발생 시 기존 값 유지
                 ));
     }
 
@@ -72,22 +73,24 @@ public class KmaWeatherService {
             return Collections.emptyList();
         }
         Map<String, Object> response = (Map<String, Object>) responseMap.get("response");
-        if (response == null || !response.containsKey("body")) {
+        if (response.get("body") == null) {
             Map<String, Object> header = (Map<String, Object>) response.get("header");
-            log.warn("API call failed with header: {}", header);
+            if (header != null) {
+                log.warn("API call failed with header: {}", header);
+            }
             return Collections.emptyList();
         }
         Map<String, Object> body = (Map<String, Object>) response.get("body");
-        if (body == null || !body.containsKey("items")) {
+        if (body.get("items") == null) {
             log.warn("API response body contains no items field.");
             return Collections.emptyList();
         }
-        Object itemsObject = body.get("items");
-        if (!(itemsObject instanceof Map)) {
-            log.warn("API response 'items' field is not a Map: {}", itemsObject);
+        // "items"가 비어있는 경우 빈 문자열("")로 올 수 있음
+        if (!(body.get("items") instanceof Map)) {
+            log.warn("API response 'items' field is not a Map or is empty.");
             return Collections.emptyList();
         }
-        Map<String, Object> items = (Map<String, Object>) itemsObject;
+        Map<String, Object> items = (Map<String, Object>) body.get("items");
         if (items.get("item") == null) {
             log.warn("API response body contains no item data.");
             return Collections.emptyList();
@@ -101,18 +104,36 @@ public class KmaWeatherService {
         return Collections.emptyList();
     }
 
+    /**
+     * 초단기실황, 초단기예보 API의 데이터 발표 시간을 고려하여
+     * 조회 가능한 가장 최신의 base_date와 base_time을 계산합니다.
+     */
     private BaseDateTime getBaseDateTime(String endpoint) {
-        LocalDate date = LocalDate.now();
-        LocalTime time = LocalTime.now();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime now = LocalDateTime.now();
+
+        // 각 API의 데이터 발표 시간(분)
+        int cutoffMinute = "getUltraSrtNcst".equals(endpoint) ? 40 : 45;
+
+        LocalDateTime baseDateTime;
+        // 현재 분이 발표 시간(40분/45분) 이전이면, 1시간 전 데이터를 요청해야 함
+        if (now.getMinute() < cutoffMinute) {
+            baseDateTime = now.minusHours(1);
+        } else {
+            baseDateTime = now;
+        }
+
+        String baseDate = baseDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String baseTime;
 
         if ("getUltraSrtNcst".equals(endpoint)) {
-            LocalTime baseTime = time.getMinute() < 10 ? time.minusHours(1) : time;
-            return new BaseDateTime(date.format(dateFormatter), baseTime.format(DateTimeFormatter.ofPattern("HH00")));
+            // 초단기실황은 HH00 형식
+            baseTime = baseDateTime.format(DateTimeFormatter.ofPattern("HH00"));
         } else { // "getUltraSrtFcst"
-            LocalTime baseTime = time.getMinute() < 45 ? time.minusHours(1) : time;
-            return new BaseDateTime(date.format(dateFormatter), baseTime.format(DateTimeFormatter.ofPattern("HH30")));
+            // 초단기예보는 HH30 형식
+            baseTime = baseDateTime.format(DateTimeFormatter.ofPattern("HH30"));
         }
+
+        return new BaseDateTime(baseDate, baseTime);
     }
 
     public List<Map<String, Object>> fetchShortTermForecastData(String nx, String ny) {
@@ -137,18 +158,36 @@ public class KmaWeatherService {
         }
     }
 
+    /**
+     * 단기예보 API의 데이터 발표 시간을 고려하여
+     * 조회 가능한 가장 최신의 base_date와 base_time을 계산합니다.
+     */
     private BaseDateTime getBaseDateTimeForShortTerm() {
         LocalDateTime now = LocalDateTime.now();
-        LocalTime baseTime = LocalTime.of(2, 0);
-        // API는 3시간 간격으로 2시, 5시, 8시...에 예보를 제공. 현재 시간에서 가장 가까운 과거의 예보 시각을 찾음.
-        while (baseTime.isBefore(now.toLocalTime().minusHours(3))) {
-            baseTime = baseTime.plusHours(3);
+        // 데이터는 매 3시간마다 10분에 발표 (02:10, 05:10, ...)
+        // 안전하게 15분의 여유를 둠
+        LocalDateTime effectiveTime = now.minusMinutes(15);
+
+        int hour = effectiveTime.getHour();
+        int baseHour;
+
+        // 현재 시간(여유 시간 차감 후)을 기준으로 가장 가까운 과거의 발표 시간을 찾음
+        if (hour < 2) baseHour = 23;
+        else if (hour < 5) baseHour = 2;
+        else if (hour < 8) baseHour = 5;
+        else if (hour < 11) baseHour = 8;
+        else if (hour < 14) baseHour = 11;
+        else if (hour < 17) baseHour = 14;
+        else if (hour < 20) baseHour = 17;
+        else if (hour < 23) baseHour = 20;
+        else baseHour = 23;
+
+        LocalDate baseDate = effectiveTime.toLocalDate();
+        // 만약 현재 시간이 새벽 2시 이전이라 전날 23시 데이터를 써야 할 경우, 날짜도 하루 빼줌
+        if (hour < 2) {
+            baseDate = baseDate.minusDays(1);
         }
-        // 만약 현재 시간이 새벽 0~2시 사이라면, 예보는 전날 23시 것을 사용해야 함
-        if (now.getHour() < 2) {
-            now = now.minusDays(1);
-            baseTime = LocalTime.of(23,0);
-        }
-        return new BaseDateTime(now.format(DateTimeFormatter.ofPattern("yyyyMMdd")), baseTime.format(DateTimeFormatter.ofPattern("HHmm")));
+
+        return new BaseDateTime(baseDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")), String.format("%02d00", baseHour));
     }
 }

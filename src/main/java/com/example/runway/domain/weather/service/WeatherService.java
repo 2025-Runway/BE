@@ -44,6 +44,9 @@ public class WeatherService {
         Map<String, String> liveData = kmaWeatherService.fetchWeatherData("getUltraSrtNcst", xy.x(), xy.y());
         Map<String, String> forecastData = kmaWeatherService.fetchWeatherData("getUltraSrtFcst", xy.x(), xy.y());
 
+        log.info("liveData = {}", liveData);
+        log.info("forecastData = {}", forecastData);
+
         // 3. 에어코리아 미세먼지 서비스 호출
         String stationName = airKoreaService.fetchNearestStationName(tm.x(), tm.y());
         Map<String, String> airQualityData = airKoreaService.fetchAirQualityData(stationName);
@@ -101,6 +104,8 @@ public class WeatherService {
         Map<String, String> airQualityData = airKoreaService.fetchAirQualityData(stationName);
         String uvIndexValue = kmaLivingWeatherService.fetchUvIndex(areaCode);
 
+        log.info("forecastData : {}", forecastData.toString());
+
         // 3. 데이터 조합 및 변환
         String tempValue = liveData.get("T1H");
         String windSpeedValue = liveData.get("WSD");
@@ -109,6 +114,12 @@ public class WeatherService {
         String fineDustGrade = airQualityData.get("pm10Grade1h");
 
         if (tempValue == null || windSpeedValue == null || skyCode == null || ptyCode == null || fineDustGrade == null) {
+            log.info("tempValue :{}", tempValue);
+            log.info("windSpeedValue :{}", windSpeedValue);
+            log.info("skyCode :{}", skyCode);
+            log.info("ptyCode :{}", ptyCode);
+            log.info("fineDustGrade :{}", fineDustGrade);
+
             throw DataNotFoundException.EXCEPTION;
         }
 

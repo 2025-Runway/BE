@@ -81,7 +81,7 @@ public class AuthService {
                 .build();
     }
 
-    @Transactional(readOnly = true) 
+    @Transactional(readOnly = true)
     public TestLoginResponse testLogin(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다."));
