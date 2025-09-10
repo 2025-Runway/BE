@@ -6,7 +6,7 @@ import com.example.runway.global.jwt.annotation.LoginUserId;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("mypage")
+@RequestMapping("/mypage")
 public class MypageController {
     private final MypageService mypageService;
 
