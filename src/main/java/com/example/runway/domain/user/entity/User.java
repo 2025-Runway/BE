@@ -44,6 +44,9 @@ public class User extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private UserStatus status = UserStatus.ACTIVE;
 
+    @Column(name = "destination", nullable = true, columnDefinition = "VARCHAR(255) DEFAULT ''")
+    private String destination;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "last_viewed_course_idx")
     private Course lastViewedCourse;
@@ -55,6 +58,7 @@ public class User extends BaseEntity {
         this.lastViewedCourse = course;
         this.lastViewedAt = LocalDateTime.now();
     }
+
 
 
 
