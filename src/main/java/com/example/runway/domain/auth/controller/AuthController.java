@@ -1,15 +1,14 @@
 package com.example.runway.domain.auth.controller;
 
 import com.example.runway.domain.auth.dto.LoginResponse;
+import com.example.runway.domain.auth.dto.TestLoginRequest;
+import com.example.runway.domain.auth.dto.TestLoginResponse;
 import com.example.runway.domain.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -31,5 +30,12 @@ public class AuthController {
 
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/auth/test")
+    public ResponseEntity<TestLoginResponse> testLogin(@RequestBody TestLoginRequest request) {
+        TestLoginResponse response = authService.testLogin(request.email());
+        return ResponseEntity.ok(response);
+    }
+
 
 }
