@@ -6,6 +6,9 @@ import com.example.runway.domain.tourInfo.entity.TourInfo;
 import com.example.runway.domain.tourInfo.repository.CourseTourRepository;
 import com.example.runway.domain.tourInfo.util.ContentTypeUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +18,10 @@ import java.util.List;
 public class TourInfoService {
     private final CourseTourRepository courseTourRepository;
 
-    public List<TourInfoDto> getByCrsIdx(String crsIdx, String contentType) {
+    public Page<TourInfoDto> getByCrsIdx(String crsIdx, String contentType, int page) {
         String contentTypeId = ContentTypeUtil.toContentTypeId(contentType);
-        List<TourInfo> tourInfoList = courseTourRepository.findTourInfosByCrsIdxAndOptionalContentTypeId(crsIdx, contentTypeId);
-        return tourInfoList.stream().map(TourInfoDto::from).toList();
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<TourInfo> tourInfoList = courseTourRepository.findTourInfosByCrsIdxAndOptionalContentTypeId(crsIdx, contentTypeId, pageable);
+        return tourInfoList.map(TourInfoDto::from);
     }
 }

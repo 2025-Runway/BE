@@ -2,6 +2,7 @@ package com.example.runway.domain.tourInfo.dto;
 
 import com.example.runway.domain.tourInfo.entity.TourInfo;
 import com.example.runway.domain.tourInfo.util.ContentTypeUtil;
+import org.springframework.data.domain.Page;
 
 public record TourInfoDto(
         String contentId,
@@ -24,6 +25,10 @@ public record TourInfoDto(
                 tourInfo.getMapX(),
                 tourInfo.getMapY()
         );
+    }
+
+    public Page<TourInfoDto> toDtoList(Page<TourInfo> tourInfoPage) {
+        return tourInfoPage.map(TourInfoDto::from);
     }
 
 }

@@ -2,6 +2,8 @@ package com.example.runway.domain.tourInfo.repository;
 
 import com.example.runway.domain.tourInfo.entity.CourseTour;
 import com.example.runway.domain.tourInfo.entity.TourInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +19,8 @@ public interface CourseTourRepository extends JpaRepository<CourseTour, Long> {
         WHERE ct.course.crsIdx = :crsIdx
           AND (:contentTypeId IS NULL OR ct.tourInfo.contentTypeId = :contentTypeId)
     """)
-    List<TourInfo> findTourInfosByCrsIdxAndOptionalContentTypeId(
+    Page<TourInfo> findTourInfosByCrsIdxAndOptionalContentTypeId(
             @Param("crsIdx") String crsIdx,
-            @Param("contentTypeId") String contentTypeId);
+            @Param("contentTypeId") String contentTypeId,
+            Pageable pageable);
 }
