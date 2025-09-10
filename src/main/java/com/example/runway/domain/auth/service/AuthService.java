@@ -1,6 +1,7 @@
 package com.example.runway.domain.auth.service;
 
 import com.example.runway.domain.auth.dto.LoginResponse;
+import com.example.runway.domain.auth.dto.TestLoginResponse;
 import com.example.runway.domain.user.entity.User;
 import com.example.runway.domain.user.repository.UserRepository;
 import com.example.runway.domain.user.entity.UserStatus;
@@ -11,6 +12,7 @@ import com.example.runway.infra.kakao.dto.KakaoUserInfoResponseDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,5 +79,17 @@ public class AuthService {
                 .profileImageUrl(user.getProfileImageUrl())
                 .accessToken(accessJwt)
                 .build();
+    }
+
+    @Transactional(readOnly = true) 
+    public TestLoginResponse testLogin(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다."));
+
+        String accessToken = jwtProvider.createAccessToken(user.getId().toString(), Map.of(
+                "nickname", user.getNickname()
+        ));
+
+        return new TestLoginResponse(accessToken);
     }
 }

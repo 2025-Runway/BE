@@ -1,8 +1,11 @@
 package com.example.runway.domain.user.entity;
 
+import com.example.runway.domain.course.entity.Course;
 import com.example.runway.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -40,6 +43,22 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private UserStatus status = UserStatus.ACTIVE;
+
+    @Column(name = "destination", nullable = true, columnDefinition = "VARCHAR(255) DEFAULT ''")
+    private String destination;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_viewed_course_idx")
+    private Course lastViewedCourse;
+
+    @Column(name = "last_viewed_at")
+    private LocalDateTime lastViewedAt;
+
+    public void updateLastViewedCourse(Course course) {
+        this.lastViewedCourse = course;
+        this.lastViewedAt = LocalDateTime.now();
+    }
+
 
 
 
