@@ -59,6 +59,7 @@ public class AuthService {
                                 .nickname(nickname)
                                 .profileImageUrl(profileImageUrl)
                                 .status(UserStatus.ACTIVE)
+                                .destination("")
                                 .build()
                 );
 
