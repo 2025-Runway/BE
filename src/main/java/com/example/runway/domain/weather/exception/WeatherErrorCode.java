@@ -18,7 +18,8 @@ public enum WeatherErrorCode implements BaseErrorCode {
     // 데이터 조회 실패
     STATION_NOT_FOUND(NOT_FOUND, "WEATHER_404_1", "근처 측정소를 찾을 수 없습니다."),
     DATA_NOT_FOUND(INTERNAL_SERVER_ERROR, "WEATHER_500_3", "필수 응답 데이터가 누락되었습니다."),
-    ApiCallFailed(INTERNAL_SERVER_ERROR,"WEATHER_500_4","기상 API 호출하는데 문제가 생겼습니다.");
+    ApiCallFailed(INTERNAL_SERVER_ERROR,"WEATHER_500_4","기상 API 호출하는데 문제가 생겼습니다."),
+    InvalidDestination(INTERNAL_SERVER_ERROR,"WEATHER_500_5","유효하지 않은 지역입니다.");
 
     private final HttpStatus status;
     private final String code;

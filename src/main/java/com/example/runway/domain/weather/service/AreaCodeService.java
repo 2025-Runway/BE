@@ -41,6 +41,20 @@ public class AreaCodeService {
     }
 
     public Optional<String> getAreaCode(String address) {
+        if (address == null || address.isBlank()) {
+            return Optional.empty();
+        }
+
+        // 주소를 공백으로 분리
+        String[] addressParts = address.split(" ");
+
+        // 주소가 "시/도 시/군/구" 이상으로 길면, 앞 두 부분만 잘라 KEY로 사용
+        if (addressParts.length >= 2) {
+            String simplifiedKey = addressParts[0] + " " + addressParts[1];
+            return Optional.ofNullable(areaCodeMap.get(simplifiedKey));
+        }
+
+        // "서울특별시" 처럼 주소가 한 부분일 경우 그대로 사용
         return Optional.ofNullable(areaCodeMap.get(address));
     }
 }
