@@ -1,5 +1,6 @@
 package com.example.runway.domain.marathon.repository;
 
+import com.example.runway.domain.marathon.dto.Price;
 import com.example.runway.domain.marathon.entity.Marathon;
 import com.example.runway.domain.marathon.entity.MarathonType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,5 @@ public interface MarathonTypeRepository extends JpaRepository<MarathonType, Long
     """)
     List<String> findNamesByMarathon(@Param("marathon") Marathon marathon);
 
+    List<MarathonType> findByMarathon(Marathon marathon);
 }
