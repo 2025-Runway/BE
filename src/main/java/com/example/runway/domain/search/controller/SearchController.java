@@ -20,8 +20,8 @@ public class SearchController {
 
     @GetMapping("")
     public List<SearchCoursesDto> searchCourses(@LoginUserId(required = false) Long userId, @RequestParam String q) {
-        keywordService.addKeyword(userId, q);
-        return searchService.coursesSearch(q);
+        keywordService.addKeyword(userId, q.trim());
+        return searchService.coursesSearch(q.trim());
     }
 
     @GetMapping("/{crsIdx}")
