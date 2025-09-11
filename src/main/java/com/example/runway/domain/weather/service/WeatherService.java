@@ -1,11 +1,16 @@
 package com.example.runway.domain.weather.service;
 
+import com.example.runway.domain.user.entity.User;
+import com.example.runway.domain.user.error.NotFoundUser;
+import com.example.runway.domain.user.service.UserService;
 import com.example.runway.domain.weather.dto.WeatherDetailResponse;
 import com.example.runway.domain.weather.dto.WeatherResponseDto;
 import com.example.runway.domain.weather.dto.WeeklyWeatherDto;
 import com.example.runway.domain.weather.exception.DataNotFoundException;
+import com.example.runway.domain.weather.exception.InvalidDestinationException;
 import com.example.runway.domain.weather.service.CoordinateConversionService.TMCoordinate;
 import com.example.runway.domain.weather.service.CoordinateConversionService.XYCoordinate;
+import com.example.runway.domain.weather.service.GeocodingService.LatLon;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +35,9 @@ public class WeatherService {
     private final AreaCodeService areaCodeService;
     private final KmaMidTermRegionService kmaMidTermRegionService;
     private final KmaMidTermWeatherService kmaMidTermWeatherService;
+    private final GeocodingService geocodingService;
+    private final UserService userService;
+
 
 
     /**
@@ -94,7 +102,7 @@ public class WeatherService {
         // 1. 좌표 변환
         XYCoordinate xy = coordinateConversionService.convertLatLonToXY(lat, lon);
         TMCoordinate tm = coordinateConversionService.convertLatLonToTM(lat, lon);
-        String location = reverseGeocodingService.getAddress(lat, lon);
+        String location = reverseGeocodingService.getAddress(lat, lon); //예시 : 서울특별시 종로구
         String areaCode = areaCodeService.getAreaCode(location).orElse("1100000000"); // 기본값: 서울
 
         // 2. 외부 API 병렬 또는 순차 호출
@@ -318,5 +326,77 @@ public class WeatherService {
         } else {
             return baseDate + "1800";
         }
+    }
+
+
+    /**
+     * 사용자의 저장된 지역(destination) 기준으로 상세 날씨 정보를 조회합니다. (개선된 버전)
+     */
+    public WeatherDetailResponse getWeatherDetailsByDestination(Long userId) {
+        // 1. 사용자 ID로 'destination' 조회
+        User user = userService.getUser(userId);
+        String destination = user.getDestination();
+
+        if (destination == null || destination.isBlank()) {
+            throw InvalidDestinationException.EXCEPTION;
+        }
+
+        // 2. 'destination'을 좌표로 변환 (날씨 API 호출에 필요)
+        LatLon coords = geocodingService.getCoordinates(destination);
+
+        // --- getWeatherDetails(lat, lon)의 로직을 직접 적용 ---
+        // 3. 좌표 변환 (기상청, 에어코리아 API용)
+        XYCoordinate xy = coordinateConversionService.convertLatLonToXY(coords.lat(), coords.lon());
+        TMCoordinate tm = coordinateConversionService.convertLatLonToTM(coords.lat(), coords.lon());
+
+        // 4. 지역 코드 조회 (ReverseGeocoding 없이 바로 destination 사용!)
+        String areaCode = areaCodeService.getAreaCode(destination).orElse("1100000000"); // 기본값: 서울
+
+        // 5. 외부 API 호출
+        Map<String, String> liveData = kmaWeatherService.fetchWeatherData("getUltraSrtNcst", xy.x(), xy.y());
+        Map<String, String> forecastData = kmaWeatherService.fetchWeatherData("getUltraSrtFcst", xy.x(), xy.y());
+        String stationName = airKoreaService.fetchNearestStationName(tm.x(), tm.y());
+        Map<String, String> airQualityData = airKoreaService.fetchAirQualityData(stationName);
+        String uvIndexValue = kmaLivingWeatherService.fetchUvIndex(areaCode);
+
+        // 6. 데이터 조합 및 변환
+        String tempValue = liveData.get("T1H");
+        String windSpeedValue = liveData.get("WSD");
+        String skyCode = forecastData.get("SKY");
+        String ptyCode = forecastData.get("PTY");
+        String fineDustGrade = airQualityData.get("pm10Grade1h");
+
+        if (tempValue == null || windSpeedValue == null || skyCode == null || ptyCode == null || fineDustGrade == null) {
+            throw DataNotFoundException.EXCEPTION;
+        }
+
+        double temperature = Double.parseDouble(tempValue);
+        String windSpeed = windSpeedValue + "m/s";
+        String weather = combineWeatherConditions(skyCode, ptyCode);
+        String fineDust = convertGradeToText(fineDustGrade);
+        String uvIndex = convertUvGradeToText(uvIndexValue);
+
+        // destination을 location으로 사용
+        return new WeatherDetailResponse(destination, temperature, weather, windSpeed, fineDust, uvIndex);
+    }
+
+    /**
+     * 사용자의 저장된 지역(destination) 기준으로 주간 날씨 정보를 조회합니다. (개선된 버전)
+     */
+    public List<WeeklyWeatherDto> getWeeklyWeatherByDestination(Long userId) {
+        // 1. 사용자 ID로 'destination' 조회
+        User user = userService.getUser(userId);
+        String destination = user.getDestination();
+
+        if (destination == null || destination.isBlank()) {
+            throw InvalidDestinationException.EXCEPTION;
+        }
+
+        // 2. 'destination'을 좌표로 변환 (날씨 API 호출에 필요)
+        LatLon coords = geocodingService.getCoordinates(destination);
+
+        // 3. 변환된 좌표로 기존 주간 날씨 조회 메서드 호출 (이 메서드는 내부에서 ReverseGeocoding을 다시 하므로, 장기적으로는 이 부분도 개선하는 것이 좋습니다)
+        // 우선은 getWeatherDetailsByDestination처럼 로직을 개선하는 것이 핵심입니다.
+        return getWeeklyWeather(coords.lat(), coords.lon());
     }
 }

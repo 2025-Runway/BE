@@ -13,6 +13,6 @@ public class UserService {
     private final UserRepository userRepository;
 
     public User getUser(Long userId) {
-        return userRepository.findByUserId(userId).orElseThrow(() -> NotFoundUser.EXCEPTION);
+        return userRepository.findById(userId).orElseThrow(() -> NotFoundUser.EXCEPTION);
     }
 }
