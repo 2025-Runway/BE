@@ -1,29 +1,27 @@
 package com.example.runway.domain.marathon.dto;
 
 import com.example.runway.domain.marathon.entity.Marathon;
+import com.example.runway.global.entity.PageInfo;
 
 import java.util.List;
 
-public record MarathonListDto(
-        Long id,
-        String title,
-        String month,
-        String day,
-        String dayOfWeek,
-        String addr,
-        List<String> types
+public record MarathonListDto<T>(
+        T data,
+        PageInfo pageInfo
 
 ) {
-    public static MarathonListDto toDto(Marathon marathon, List<String> types) {
-        String address = marathon.getAddr1() +" "+ marathon.getAddr2();
+    public static MarathonListDto from(Marathon marathon, List<String> types) {
+        MarathonList marathonList = MarathonList.of(marathon, types);
         return new MarathonListDto(
-                marathon.getId(),
-                marathon.getTitle(),
-                String.format("%02d", marathon.getMonth()),
-                String.format("%02d", marathon.getDay()),
-                marathon.getDayOfWeek(),
-                address,
-                types
+                marathonList,
+                null
+        );
+    }
+
+    public MarathonListDto<T> toDto(T data, PageInfo pageInfo) {
+        return new MarathonListDto(
+                data,
+                pageInfo
         );
 
     }
