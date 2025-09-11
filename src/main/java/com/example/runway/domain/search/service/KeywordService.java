@@ -30,16 +30,18 @@ public class KeywordService {
 
     public void addKeyword(Long userId, String keyword) {
         // 유저 존재 여부 검증
-        searchKeywordValidator.userValidate(userId);
+        if(searchKeywordValidator.userValidate(userId)){
+            if(keywordRepository.existsByUserIdAndWord(userId, keyword)) {
+                keywordRepository.deleteByUserIdAndWord(userId, keyword);
+            }
 
-        if(keywordRepository.existsByUserIdAndWord(userId, keyword)) {
-            keywordRepository.deleteByUserIdAndWord(userId, keyword);
-        }
+            Keyword newKeyword = Keyword.builder()
+                    .user(userService.getUser(userId))
+                    .word(keyword)
+                    .build();
+            keywordRepository.save(newKeyword);
+        };
 
-        Keyword newKeyword = Keyword.builder()
-                .user(userService.getUser(userId))
-                .word(keyword)
-                .build();
-        keywordRepository.save(newKeyword);
+
     }
 }
