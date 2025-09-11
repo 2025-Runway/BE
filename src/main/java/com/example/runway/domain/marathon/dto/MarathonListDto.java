@@ -7,8 +7,8 @@ import java.util.List;
 public record MarathonListDto(
         Long id,
         String title,
-        int month,
-        int day,
+        String month,
+        String day,
         String dayOfWeek,
         String addr,
         List<String> types
@@ -19,8 +19,8 @@ public record MarathonListDto(
         return new MarathonListDto(
                 marathon.getId(),
                 marathon.getTitle(),
-                marathon.getMonth(),
-                marathon.getDay(),
+                String.format("%02d", marathon.getMonth()),
+                String.format("%02d", marathon.getDay()),
                 marathon.getDayOfWeek(),
                 address,
                 types
