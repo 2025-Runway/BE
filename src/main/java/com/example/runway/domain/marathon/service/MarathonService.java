@@ -1,9 +1,11 @@
 package com.example.runway.domain.marathon.service;
 
+import com.example.runway.domain.marathon.dto.CourseInfo;
 import com.example.runway.domain.marathon.dto.MarathonDto;
 import com.example.runway.domain.marathon.dto.MarathonListDto;
 import com.example.runway.domain.marathon.dto.Price;
 import com.example.runway.domain.marathon.entity.Marathon;
+import com.example.runway.domain.marathon.repository.MarathonCourseRepository;
 import com.example.runway.domain.marathon.repository.MarathonRepository;
 import com.example.runway.domain.marathon.repository.MarathonTypeRepository;
 import com.example.runway.domain.search.error.NotFoundCourse;
@@ -20,6 +22,7 @@ import java.util.List;
 public class MarathonService {
     private final MarathonRepository marathonRepository;
     private final MarathonTypeRepository marathonTypeRepository;
+    private final MarathonCourseRepository marathonCourseRepository;
 
     public Page<MarathonListDto> marathonList(int page) {
         Pageable pageable = PageRequest.of(page, 10);
@@ -38,6 +41,10 @@ public class MarathonService {
         List<Price> prices = marathonTypeRepository.findByMarathon(marathon)
                 .stream().map(Price::from)
                 .toList();
-        return MarathonDto.toDto(marathon, prices);
+
+        List<CourseInfo> infos = marathonCourseRepository.findCourseByMarathonId(marathonId, PageRequest.of(0, 5))
+                .stream().map(CourseInfo::from)
+                .toList();
+        return MarathonDto.toDto(marathon, infos, prices);
     }
 }

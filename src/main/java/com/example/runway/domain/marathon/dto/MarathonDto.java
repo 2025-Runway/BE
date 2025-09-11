@@ -13,11 +13,11 @@ public record MarathonDto(
         String addr,
         String host,
         List<Price> prices,
-        //List<CourseInfo> courseInfos,
+        List<CourseInfo> courseInfos,
         String homepageUrl
 
 ) {
-    public static MarathonDto toDto(Marathon marathon, List<Price> prices) {
+    public static MarathonDto toDto(Marathon marathon, List<CourseInfo> courseInfos, List<Price> prices) {
         return new MarathonDto(
                 marathon.getId(),
                 marathon.getTitle(),
@@ -27,7 +27,7 @@ public record MarathonDto(
                 marathon.getAddr1() + ", " + marathon.getAddr2(),
                 marathon.getHost(),
                 prices,
-                //courseInfos,
+                courseInfos,
                 marathon.getHomepageUrl()
         );
     }
