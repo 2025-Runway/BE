@@ -4,6 +4,7 @@ import com.example.runway.domain.course.repository.CourseRepository;
 import com.example.runway.domain.course.service.CourseService;
 import com.example.runway.domain.user.dto.DestinationRequestDto;
 import com.example.runway.domain.user.dto.DestinationResponseDto;
+import com.example.runway.domain.user.entity.User;
 import com.example.runway.domain.user.error.NotFoundDestinationImage;
 import com.example.runway.domain.user.error.NotFoundUser;
 import com.example.runway.domain.user.repository.RegionImageRepository;
@@ -31,9 +32,12 @@ public class MypageService {
     }
 
     public DestinationResponseDto getDestination(Long userId) {
-        String destination = userRepository.findDestinationById(userId).orElseThrow(
+        User user = userRepository.findById(userId).orElseThrow(
                 () -> NotFoundUser.EXCEPTION
         );
+        
+        String destination = user.getDestination();
+        String profileImageUrl = user.getProfileImageUrl();
 
         PageRequest pageRequest = PageRequest.of(0, 1);
 
@@ -46,7 +50,7 @@ public class MypageService {
         };
 
 
-        return new DestinationResponseDto(destination, url.get(0));
+        return new DestinationResponseDto(profileImageUrl, destination, url.get(0));
     }
 
     @Transactional
