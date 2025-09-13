@@ -15,4 +15,15 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
 
     Optional<Course> findByCrsIdx(String crsIdx);
 
+    @Query("SELECT f.course FROM Favorite f GROUP BY f.course HAVING f.course.sigun = :sigun ORDER BY COUNT(f.course) DESC")
+    List<Course> findPopularCoursesBySigun(String sigun, Pageable pageable);
+
+    @Query("""
+    SELECT c.crsImgUrl
+    FROM Course c
+    WHERE c.sigun LIKE concat('%', :sigun, '%')
+    AND c.crsImgUrl IS NOT NULL
+    """)
+    List<String> findCrsImgUrlBySigun(String sigun, Pageable pageable);
+
 }
