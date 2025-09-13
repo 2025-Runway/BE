@@ -2,8 +2,9 @@ package com.example.runway.domain.course.controller;
 
 import com.example.runway.domain.course.dto.CourseAnalysisDto;
 import com.example.runway.domain.course.dto.CourseDto;
-import com.example.runway.domain.course.dto.PopularCourseDto;
+import com.example.runway.domain.course.dto.CoursePreviewDto;
 import com.example.runway.domain.course.dto.RecentCourseDto;
+import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.course.service.CourseService;
 import com.example.runway.global.jwt.annotation.LoginUserId;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,8 +44,8 @@ public class CourseController {
 
     // 인기 코스 조회(전국 단위, 로그인 안해도 됨)
     @GetMapping("/public/courses/popular")
-    public ResponseEntity<List<PopularCourseDto>> getPopularCourses() {
-        List<PopularCourseDto> result = courseService.getPopularCourses(10);
+    public ResponseEntity<List<CoursePreviewDto>> getPopularCourses() {
+        List<CoursePreviewDto> result = courseService.getPopularCourses(10);
         return ResponseEntity.ok(result);
     }
 
@@ -53,4 +55,27 @@ public class CourseController {
         CourseAnalysisDto analysisDto = courseService.getCourseAnalysisById(crsIdx);
         return ResponseEntity.ok(analysisDto);
     }
+
+    //추천 코스 목록
+    @GetMapping("/courses/recommendations")
+    public ResponseEntity<List<CoursePreviewDto>> getRecommendedCoursesForUser(@LoginUserId Long userId) {
+        List<Course> recommendedCourses = courseService.getRecommendedCourses(userId);
+
+        List<CoursePreviewDto> response = recommendedCourses.stream()
+                .map(CoursePreviewDto::from)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 지역 기반 추천 코스 목록
+    @GetMapping("/courses/recommendations/region")
+    public ResponseEntity<List<CoursePreviewDto>> getRecommendedCoursesForUserByRegion(@LoginUserId Long userId) {
+        List<Course> recommendedCourses = courseService.getRecommendedCoursesByRegion(userId);
+        List<CoursePreviewDto> response = recommendedCourses.stream()
+                .map(CoursePreviewDto::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
 }
