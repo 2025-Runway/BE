@@ -28,4 +28,9 @@ public class MypageController {
     public DestinationResponseDto getDestination(@LoginUserId Long userId) {
         return mypageService.getDestination(userId);
     }
+
+    @DeleteMapping("")
+    public void deleteUser(@LoginUserId Long userId) {
+        mypageService.deleteUser(userId);
+    }
 }

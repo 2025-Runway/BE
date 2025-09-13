@@ -49,5 +49,10 @@ public class MypageService {
         return new DestinationResponseDto(destination, url.get(0));
     }
 
+    @Transactional
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
+
 
 }
