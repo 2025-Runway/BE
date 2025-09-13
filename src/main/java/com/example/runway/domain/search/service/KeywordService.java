@@ -7,10 +7,12 @@ import com.example.runway.domain.search.validator.SearchKeywordValidator;
 import com.example.runway.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class KeywordService {
     private final KeywordRepository keywordRepository;
@@ -24,10 +26,12 @@ public class KeywordService {
                 .toList();
     }
 
+    @Transactional
     public void deleteKeyword(Long userId, Long keywordId) {
         keywordRepository.deleteByUserIdAndKeywordId(userId, keywordId);
     }
 
+    @Transactional
     public void addKeyword(Long userId, String keyword) {
         // 유저 존재 여부 검증
         if(searchKeywordValidator.userValidate(userId)){

@@ -8,6 +8,8 @@ import com.example.runway.domain.search.repository.KeywordRepository;
 import com.example.runway.domain.search.repository.SearchRepository;
 import com.example.runway.domain.search.validator.SearchKeywordValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,11 +21,12 @@ public class SearchService {
     private final SearchKeywordValidator searchKeywordValidator;
     private final KeywordRepository keywordRepository;
 
-    public List<SearchCoursesDto> coursesSearch(String q) {
+    public Page<SearchCoursesDto> coursesSearch(String q, int page) {
         searchKeywordValidator.keywordExistValidate(q);
-        List<Course> courses = searchRepository.findByCrsKorNmOrSigun(q);
+        PageRequest pageRequest = PageRequest.of(page, 10);
+        Page<Course> courses = searchRepository.findByCrsKorNmOrSigun(q, pageRequest);
         searchKeywordValidator.resultValidate(courses);
-        return courses.stream().map(SearchCoursesDto::from).toList();
+        return courses.map(SearchCoursesDto::from);
     }
 
     public SearchCourseDto courseSearch(String crsIdx) {

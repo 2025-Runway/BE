@@ -4,6 +4,7 @@ import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.search.error.EmptyKeyword;
 import com.example.runway.domain.search.error.NoSearchResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class SearchKeywordValidator {
         }
     }
 
-    public void resultValidate(List<Course> courses) {
+    public void resultValidate(Page<Course> courses) {
         if (courses.isEmpty()) {
             throw NoSearchResult.EXCEPTION;
         }
