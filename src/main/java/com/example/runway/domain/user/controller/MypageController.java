@@ -1,8 +1,7 @@
 package com.example.runway.domain.user.controller;
 
-import com.example.runway.domain.course.dto.CourseDto;
 import com.example.runway.domain.user.dto.DestinationRequestDto;
-import com.example.runway.domain.user.dto.DestinationResponseDto;
+import com.example.runway.domain.user.dto.MypageResponseDto;
 import com.example.runway.domain.user.service.MypageService;
 import com.example.runway.global.jwt.annotation.LoginUserId;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +23,8 @@ public class MypageController {
         mypageService.destinationUpdate(userId, destination);
     }
 
-    @GetMapping("/destnination")
-    public DestinationResponseDto getDestination(@LoginUserId Long userId) {
+    @GetMapping("")
+    public MypageResponseDto getDestination(@LoginUserId Long userId) {
         return mypageService.getDestination(userId);
     }
 

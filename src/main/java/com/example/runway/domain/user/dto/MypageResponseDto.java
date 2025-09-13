@@ -1,6 +1,6 @@
 package com.example.runway.domain.user.dto;
 
-public record DestinationResponseDto(
+public record MypageResponseDto(
         String profileImageUrl,
         String destination,
         String regionImageUrl
