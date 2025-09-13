@@ -20,7 +20,7 @@ public class KeywordController {
         return keywordService.getKeywords(userId);
     }
 
-    @DeleteMapping("/{keywordId}]")
+    @DeleteMapping("/{keywordId}")
     public void deleteKeyword(@LoginUserId Long userId, @PathVariable Long keywordId) {
         keywordService.deleteKeyword(userId, keywordId);
     }

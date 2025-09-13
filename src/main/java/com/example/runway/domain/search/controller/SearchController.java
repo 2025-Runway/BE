@@ -6,6 +6,7 @@ import com.example.runway.domain.search.service.KeywordService;
 import com.example.runway.domain.search.service.SearchService;
 import com.example.runway.global.jwt.annotation.LoginUserId;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,9 +20,9 @@ public class SearchController {
     private final KeywordService keywordService;
 
     @GetMapping("")
-    public List<SearchCoursesDto> searchCourses(@LoginUserId(required = false) Long userId, @RequestParam String q) {
+    public Page<SearchCoursesDto> searchCourses(@LoginUserId(required = false) Long userId, @RequestParam String q, @RequestParam int page) {
         keywordService.addKeyword(userId, q.trim());
-        return searchService.coursesSearch(q.trim());
+        return searchService.coursesSearch(q.trim(), page);
     }
 
     @GetMapping("/{crsIdx}")
