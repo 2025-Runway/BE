@@ -23,8 +23,12 @@ public class FavoriteController {
             summary = "코스 추천 API",
             description = "코스 추천해주는 API"
     )
-    public void favorite(@LoginUserId Long userId,
-                         @PathVariable("crsIdx") String crsIdx) {
+    public void favorite(
+            @Parameter(description = "유저 아이디", example = "2")
+            @LoginUserId Long userId,
+            @Parameter(description = "코스 인덱스", example = "T_CRS_MNG0000005196")
+            @PathVariable("crsIdx") String crsIdx
+    ) {
 
         favoriteService.addFavorite(userId, crsIdx);
     }
@@ -35,7 +39,7 @@ public class FavoriteController {
             description = "찜 목록을 조회"
     )
     public List<FavoriteList> getFavoriteCourse(
-            @Parameter(description = "유저 아이디", example = "@")
+            @Parameter(description = "유저 아이디", example = "2")
             @LoginUserId Long userId
     ) {
         return favoriteService.getFavoriteCourseList(userId);
