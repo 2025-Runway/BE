@@ -23,7 +23,7 @@ public class SearchService {
 
     public Page<SearchCoursesDto> coursesSearch(String q, int page) {
         searchKeywordValidator.keywordExistValidate(q);
-        PageRequest pageRequest = PageRequest.of(page, 10);
+        PageRequest pageRequest = PageRequest.of(page, 40);
         Page<Course> courses = searchRepository.findByCrsKorNmOrSigun(q, pageRequest);
         searchKeywordValidator.resultValidate(courses);
         return courses.map(SearchCoursesDto::from);
