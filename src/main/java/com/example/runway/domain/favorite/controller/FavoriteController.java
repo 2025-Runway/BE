@@ -1,10 +1,15 @@
 package com.example.runway.domain.favorite.controller;
 
 
+import com.example.runway.domain.favorite.dto.FavoriteList;
 import com.example.runway.domain.favorite.service.FavoriteService;
 import com.example.runway.global.jwt.annotation.LoginUserId;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/courses")
@@ -18,6 +23,18 @@ public class FavoriteController {
                          @PathVariable("crsIdx") String crsIdx) {
 
         favoriteService.addFavorite(userId, crsIdx);
+    }
+
+    @GetMapping("/favorite")
+    @Operation(
+            summary = "찜 목록 조회 API",
+            description = "찜 목록을 조회"
+    )
+    public List<FavoriteList> getFavoriteCourse(
+            @Parameter(description = "유저 아이디", example = "@")
+            @LoginUserId Long userId
+    ) {
+        return favoriteService.getFavoriteCourseList(userId);
     }
 
 }
