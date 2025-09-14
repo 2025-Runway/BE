@@ -1,5 +1,6 @@
 package com.example.runway.domain.favorite.service;
 
+import com.example.runway.domain.course.dto.CoursePreviewDto;
 import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.course.error.CourseFailed;
 import com.example.runway.domain.course.repository.CourseRepository;
@@ -53,7 +54,7 @@ public class FavoriteService {
     ) {
         List<Course> courses = favoriteRepository.findCourseByUserId(userId);
 
-        Map<String, List<SearchCoursesDto>> grouped = courses.stream()
+        Map<String, List<CoursePreviewDto>> grouped = courses.stream()
                 .collect(Collectors.groupingBy(
                         c -> {
                             String s = c.getSigun();
@@ -61,7 +62,7 @@ public class FavoriteService {
                             return s.substring(0, Math.min(2, s.length()));
                         },
                         LinkedHashMap::new,
-                        Collectors.mapping(SearchCoursesDto::from, Collectors.toList())
+                        Collectors.mapping(CoursePreviewDto::from, Collectors.toList())
                 ));
 
         return grouped.entrySet().stream()
