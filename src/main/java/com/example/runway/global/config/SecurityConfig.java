@@ -19,7 +19,6 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -34,20 +33,38 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/signup", "/", "/login", "/Oauth2/**","/auth/**","/public/**")
-                        .permitAll()
-                        .requestMatchers(SwaggerPatterns)
-                        .permitAll()
-                        .requestMatchers("/actuator/health")
-                        .permitAll()
-                        .anyRequest().authenticated())
+                .cors(c -> c.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/signup", "/", "/login", "/Oauth2/**", "/auth/**", "/public/**").permitAll()
+                        .requestMatchers(SwaggerPatterns).permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .anyRequest().authenticated()
+                )
                 .formLogin(AbstractHttpConfigurer::disable);
 
-        //JWT 필터 추가
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        var cfg = new org.springframework.web.cors.CorsConfiguration();
+        cfg.setAllowedOrigins(java.util.List.of(
+                "http://localhost:3000",
+                "http://localhost:8080"
+
+        ));
+        // 브라우저가 보낼/보려는 헤더를 명시 (Authorization 꼭 포함)
+        cfg.setAllowedHeaders(java.util.List.of("Authorization","Content-Type","X-Requested-With"));
+        cfg.setExposedHeaders(java.util.List.of("Location","Content-Disposition"));
+        cfg.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
+        cfg.setAllowCredentials(true);
+        cfg.setMaxAge(1800L);
+
+        var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
     }
 }
