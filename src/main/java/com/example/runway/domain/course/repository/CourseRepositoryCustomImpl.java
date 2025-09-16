@@ -76,17 +76,27 @@ public class CourseRepositoryCustomImpl implements CourseRepositoryCustom {
 
     @Override
     public List<Course> findRecommendedCoursesByRegion(Long userId, UserProfile userProfile, String region) {
-        return em.createQuery(
-                        "SELECT c FROM Course c " +
-                                "WHERE c.crsIdx NOT IN (SELECT f.course.crsIdx FROM Favorite f WHERE f.user.id = :userId) " +
-                                "AND c.sigun LIKE :region " +
-                                "ORDER BY (POW(c.crsLevel - :avgCrsLevel, 2) * 1.0) + " +
-                                "(POW(c.crsTotlRqrmHour - :avgCrsTotlRqrmHour, 2) * 0.001) + " +
-                                "(POW(c.crsDstnc - :avgCrsDstnc, 2) * 0.1) ASC", Course.class)
+        return em.createQuery("""
+        SELECT c
+        FROM Course c
+        WHERE c.crsIdx NOT IN (
+            SELECT f.course.crsIdx FROM Favorite f WHERE f.user.id = :userId
+        )
+        AND c.sigun LIKE :region
+        ORDER BY
+          ( (cast(c.crsLevel as double) - :avgCrsLevel)
+          * (cast(c.crsLevel as double) - :avgCrsLevel) ) * 1.0
+        + ( (cast(c.crsTotlRqrmHour as double) - :avgCrsTotlRqrmHour)
+          * (cast(c.crsTotlRqrmHour as double) - :avgCrsTotlRqrmHour) ) * 0.001
+        + ( (cast(c.crsDstnc as double) - :avgCrsDstnc)
+          * (cast(c.crsDstnc as double) - :avgCrsDstnc) ) * 0.1
+        ASC
+        """, Course.class)
                 .setParameter("avgCrsLevel", userProfile.getAvgCrsLevel())
                 .setParameter("avgCrsTotlRqrmHour", userProfile.getAvgCrsTotlRqrmHour())
                 .setParameter("avgCrsDstnc", userProfile.getAvgCrsDstnc())
                 .setParameter("region", region + "%")
+                .setParameter("userId", userId)
                 .setMaxResults(10)
                 .getResultList();
     }
