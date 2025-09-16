@@ -124,4 +124,22 @@ public class CourseController {
         return ResponseEntity.ok(response);
     }
 
+    // 지역 기반 인기 코스 조회
+    @GetMapping("/courses/popular/region")
+    @Operation(
+            summary = "지역 기반 인기 코스 조회 API",
+            description = "지역 기반 인기 코스 조회"
+    )
+    public ResponseEntity<List<CoursePreviewDto>> getPopularCoursesForUserByRegion(
+            @Parameter(description = "유저 아이디", example = "2")
+            @LoginUserId Long userId
+    ) {
+        List<Course> courses = courseService.getPopularCoursesByRegion(userId, 10);
+        List<CoursePreviewDto> response = courses.stream()
+                .map(CoursePreviewDto::from)
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
 }

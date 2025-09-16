@@ -225,4 +225,14 @@ public class CourseService {
         return regionalPopularCourses;
     }
 
+    @Transactional(readOnly = true)
+    public List<Course> getPopularCoursesByRegion(Long userId, int size) {
+        User user = userRepository.findById(userId).orElseThrow(() -> UserFailed.Exception);
+
+        String region = user.getDestination();
+
+        return courseRepository.findPopularCoursesForRecommendationByRegion(region, size);
+
+    }
+
 }
