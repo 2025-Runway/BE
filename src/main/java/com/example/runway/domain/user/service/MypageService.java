@@ -39,7 +39,7 @@ public class MypageService {
         String destination = user.getDestination();
         String profileImageUrl = user.getProfileImageUrl();
         if (destination == null || destination.isEmpty()) {
-            return new MypageResponseDto(profileImageUrl, destination, null);
+            return new MypageResponseDto(user.getNickname(), profileImageUrl, destination, null);
         }
 
         PageRequest pageRequest = PageRequest.of(0, 1);
@@ -53,7 +53,7 @@ public class MypageService {
         };
 
 
-        return new MypageResponseDto(profileImageUrl, destination, url.get(0));
+        return new MypageResponseDto(user.getNickname(), profileImageUrl, destination, url.get(0));
     }
 
     @Transactional
