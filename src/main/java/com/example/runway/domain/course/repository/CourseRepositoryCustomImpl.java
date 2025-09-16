@@ -84,10 +84,11 @@ public class CourseRepositoryCustomImpl implements CourseRepositoryCustom {
     @Override
     public List<Course> findPopularCoursesForRecommendationByRegion(String region, int limit) {
         return em.createQuery(
-                        "SELECT f.course FROM Favorite f " +
-                                "WHERE f.course.sigun LIKE :region " +
-                                "GROUP BY f.course.crsIdx " +
-                                "ORDER BY COUNT(f.course.crsIdx) DESC", Course.class)
+                        "SELECT c FROM Course c " +
+                            "LEFT JOIN Favorite f on c = f.course " +
+                            "WHERE " + "c.sigun LIKE :region " +
+                            "GROUP BY c.crsIdx " +
+                            "ORDER BY COUNT(f.id) DESC", Course.class)
                 .setParameter("region", region + "%")
                 .setMaxResults(limit)
                 .getResultList();
