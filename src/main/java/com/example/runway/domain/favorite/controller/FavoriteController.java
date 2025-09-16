@@ -20,8 +20,8 @@ public class FavoriteController {
 
     @PostMapping("/{crsIdx}/favorite")
     @Operation(
-            summary = "코스 추천 API",
-            description = "코스 추천해주는 API"
+            summary = "코스 찜 추가",
+            description = "코스 인덱스로 유저 찜 추가"
     )
     public void favorite(
             @Parameter(description = "유저 아이디", example = "2")
