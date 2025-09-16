@@ -194,31 +194,31 @@ public class CourseService {
         User user = userRepository.findById(userId).orElseThrow(() -> UserFailed.Exception);
 
         // 헬퍼 메서드를 사용하여 약칭을 가져옴
-        String regionAbbreviation = getRegionAbbreviation(user.getDestination());
+        String region = user.getDestination();
 
         // 지역 설정이 없거나, 맵에 없는 지역명일 경우 전국 단위 추천 실행
-        if (regionAbbreviation == null) {
+        if (region == null) {
             log.info("사용자 ID {}: 유효한 지역 정보 없음. 전국 단위 추천 실행.", userId);
             return getRecommendedCourses(userId);
         }
 
-        log.info("사용자 ID {}: 지역 '{}' 기반 추천 실행.", userId, regionAbbreviation);
+        log.info("사용자 ID {}: 지역 '{}' 기반 추천 실행.", userId, region);
 
         long favoriteCount = favoriteRepository.countByUserId(userId);
 
         if (favoriteCount > 0) {
-            UserProfile userProfile = courseRepository.calculateUserProfileByRegion(userId, regionAbbreviation);
+            UserProfile userProfile = courseRepository.calculateUserProfileByRegion(userId, region);
             if (userProfile != null) {
                 log.info("사용자 ID {}: 지역 기반 프로필 생성 완료. 유사도 추천 실행.", userId);
-                return courseRepository.findRecommendedCoursesByRegion(userId, userProfile, regionAbbreviation);
+                return courseRepository.findRecommendedCoursesByRegion(userId, userProfile, region);
             }
             log.info("사용자 ID {}: 지역 내 찜 기록 없음. 지역 기반 콜드 스타트 실행.", userId);
         }
 
-        List<Course> regionalPopularCourses = courseRepository.findPopularCoursesForRecommendationByRegion(regionAbbreviation, 10);
+        List<Course> regionalPopularCourses = courseRepository.findPopularCoursesForRecommendationByRegion(region, 10);
 
         if (regionalPopularCourses.isEmpty()) {
-            log.warn("사용자 ID {}: 지역 '{}' 내 인기 코스 없음. 전국 단위 인기 코스로 대체.", userId, regionAbbreviation);
+            log.warn("사용자 ID {}: 지역 '{}' 내 인기 코스 없음. 전국 단위 인기 코스로 대체.", userId, region);
             return courseRepository.findPopularCoursesForRecommendation(10);
         }
 
