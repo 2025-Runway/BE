@@ -27,7 +27,7 @@ public class ReverseGeocodingService {
                 .queryParam("request", "getAddress")
                 .queryParam("key", apiProperties.apiKey())
                 .queryParam("point", lon + "," + lat)
-                .queryParam("type", "ROAD")
+                .queryParam("type", "BOTH") //parcel(지번주소) , ROAD(도로명주소) 둘다 반환
                 .queryParam("format", "json")
                 .queryParam("crs", "epsg:4326")
                 .build(true).toUri();
