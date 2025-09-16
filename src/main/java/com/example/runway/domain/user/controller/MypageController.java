@@ -17,7 +17,7 @@ public class MypageController {
         this.mypageService = mypageService;
     }
 
-    @PatchMapping("/destnination")
+    @PatchMapping("/destination")
     @Operation(
             summary = "여행지 설정 API",
             description = "여행지 설정"
