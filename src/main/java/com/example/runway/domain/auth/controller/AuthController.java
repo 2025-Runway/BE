@@ -20,9 +20,9 @@ public class AuthController {
 
 
     @GetMapping("/auth/login/kakao")
-    public ResponseEntity<?> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
+    public ResponseEntity<?> kakaoLogin(@RequestParam("code") String accessCode) {
 
-        LoginResponse result = authService.oAuthLogin(accessCode, httpServletResponse);
+        LoginResponse result = authService.oAuthLogin(accessCode);
 
         log.info("kakao login result: {}", result);
 

@@ -28,7 +28,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
 
     @Transactional
-    public LoginResponse oAuthLogin(String code, HttpServletResponse response) {
+    public LoginResponse oAuthLogin(String code) {
         // 1) 토큰 교환
         KakaoTokenResponseDto token = kakaoOAuthClient.exchangeToken(code);
 
