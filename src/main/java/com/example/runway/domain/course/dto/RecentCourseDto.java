@@ -14,6 +14,12 @@ public record RecentCourseDto(
         @Schema(description = "코스 거리")
         int crsDstnc,
 
+        @Schema(description = "코스 이미지")
+        String crsImgUrl,
+
+        @Schema(description = "지역")
+        String sigun,
+
         @Schema(description = "마지막으로 조회한 시간")
         String viewedAt
 

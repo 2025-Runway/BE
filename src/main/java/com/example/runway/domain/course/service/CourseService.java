@@ -104,6 +104,8 @@ public class CourseService {
                 lastViewedCourse.getCrsIdx(),
                 lastViewedCourse.getCrsKorNm(),
                 lastViewedCourse.getCrsDstnc(),
+                lastViewedCourse.getCrsImgUrl(),
+                lastViewedCourse.getSigun(),
                 formattedDate
         ));
     }
