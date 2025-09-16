@@ -28,6 +28,6 @@ public class TourInfoController {
             @RequestParam(required = false) String contentType,
             @Parameter(description = "페이지 번호", example = "1")
             @RequestParam(required = true) int page) {
-        return tourInfoService.getByCrsIdx(crsIdx, contentType, page);
+        return tourInfoService.getByCrsIdx(crsIdx, contentType, page-1);
     }
 }

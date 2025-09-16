@@ -35,7 +35,7 @@ public class SearchController {
             @RequestParam int page
     ) {
         keywordService.addKeyword(userId, q.trim());
-        return searchService.coursesSearch(q.trim(), page);
+        return searchService.coursesSearch(q.trim(), page-1);
     }
 
     @GetMapping("/{crsIdx}")

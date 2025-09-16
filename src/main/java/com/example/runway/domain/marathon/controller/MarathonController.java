@@ -26,7 +26,7 @@ public class MarathonController {
             @Parameter(description = "페이지 번호", example = "1")
             @RequestParam(required = true) int page
     ) {
-        return marathonService.marathonList(page);
+        return marathonService.marathonList(page-1);
     }
 
     @GetMapping("/{marathonId}")
