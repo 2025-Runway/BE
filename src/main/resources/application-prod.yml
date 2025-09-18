@@ -24,4 +24,5 @@ management:
           UNKNOWN: 500
 
 server:
-  url: ${SERVER_PROD_URL}
+  server-url: ${SERVER_PROD_URL}
+  front-url: ${FRONT_PROD_URL}

@@ -2,6 +2,7 @@ package com.example.runway.global.config;
 
 import com.example.runway.global.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +17,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    @Value("${server.server-url}")
+    private String SERVER_URL;
+
+    @Value("${server.front-url}")
+    private String FRONT_URL;
+
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -53,7 +60,9 @@ public class SecurityConfig {
         var cfg = new org.springframework.web.cors.CorsConfiguration();
         cfg.setAllowedOrigins(java.util.List.of(
                 "http://localhost:3000",
-                "http://localhost:8080"
+                "http://localhost:8080",
+                SERVER_URL,
+                FRONT_URL
 
         ));
         // 브라우저가 보낼/보려는 헤더를 명시 (Authorization 꼭 포함)

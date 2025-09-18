@@ -13,8 +13,11 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-    @Value("${server.url}")
+    @Value("${server.server-url}")
     private String SERVER_URL;
+
+    @Value("${server.front-url}")
+    private String FRONT_URL;
 
     private final LoginUserIdArgumentResolver loginUserIdArgumentResolver;
 
@@ -29,6 +32,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         SERVER_URL,
+                        FRONT_URL,
                         "http://localhost:3000",
                         "http://localhost:8080",
                         "https://localhost:3000",
