@@ -14,7 +14,7 @@ import java.util.Arrays;
 
 @Configuration
 public class SwaggerConfig {
-    @Value("${server.url}")
+    @Value("${server.server-url}")
     private String SERVER_URL;
 
     @Bean
