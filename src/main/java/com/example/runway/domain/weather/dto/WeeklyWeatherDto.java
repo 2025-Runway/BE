@@ -6,5 +6,6 @@ public record WeeklyWeatherDto(
         String weatherAm,
         String weatherPm,
         int tempMin,
-        int tempMax
+        int tempMax,
+        String airQuality
 ) {}
