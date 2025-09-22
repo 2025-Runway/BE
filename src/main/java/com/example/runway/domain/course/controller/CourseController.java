@@ -1,9 +1,6 @@
 package com.example.runway.domain.course.controller;
 
-import com.example.runway.domain.course.dto.CourseAnalysisDto;
-import com.example.runway.domain.course.dto.CourseDto;
-import com.example.runway.domain.course.dto.CoursePreviewDto;
-import com.example.runway.domain.course.dto.RecentCourseDto;
+import com.example.runway.domain.course.dto.*;
 import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.course.service.CourseService;
 import com.example.runway.global.jwt.annotation.LoginUserId;
@@ -31,6 +28,20 @@ public class CourseController {
     )
     public CourseDto getCourse(@PathVariable String crsIdx) {
         return courseService.getById(crsIdx);
+    }
+
+    // 코스 상세 조회 (로그인 사용자 찜 여부 확인)
+    @GetMapping("/courses/{crsIdx}")
+    @Operation(
+            summary = "코스 상세 조회 API",
+            description = "코스 상세 정보를 조회. 로그인 시 찜 여부 확인"
+    )
+    public CourseDetailDto getCourse(
+            @Parameter(description = "유저 아이디(비로그인 시 없어도 됨)", example = "2")
+            @LoginUserId(required = false) Long userId,
+            @PathVariable String crsIdx
+    ) {
+        return courseService.getCourseDetail(userId, crsIdx);
     }
 
     // 코스 조회 기록을 남기는 API
