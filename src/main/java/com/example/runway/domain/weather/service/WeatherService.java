@@ -161,7 +161,7 @@ public class WeatherService {
             String dateStrYyyyMmDd = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
             String dateStrYyyy_Mm_Dd = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             String dayOfWeek = date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
-            String airQuality = airQualityForecast.getOrDefault(dateStrYyyy_Mm_Dd, "높음").equals("높음") ? "좋음" : "나쁨";
+            String airQuality = airQualityForecast.getOrDefault(dateStrYyyy_Mm_Dd, "높음").equals("높음") ? "나쁨" : "좋음";
 
 
             String weatherAm, weatherPm;
