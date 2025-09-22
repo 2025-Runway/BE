@@ -1,7 +1,6 @@
 package com.example.runway.domain.weather.service;
 
 import com.example.runway.domain.user.entity.User;
-import com.example.runway.domain.user.error.NotFoundUser;
 import com.example.runway.domain.user.service.UserService;
 import com.example.runway.domain.weather.dto.WeatherDetailResponse;
 import com.example.runway.domain.weather.dto.WeatherResponseDto;
@@ -20,6 +19,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,42 +39,24 @@ public class WeatherService {
     private final GeocodingService geocodingService;
     private final UserService userService;
 
-
-
-    /**
-     * 각 전문 서비스를 조율하여 날씨와 미세먼지 정보를 최종 조합합니다.
-     */
     public WeatherResponseDto getWeather(double lat, double lon) {
-        // 1. 좌표 변환 서비스 호출
         XYCoordinate xy = coordinateConversionService.convertLatLonToXY(lat, lon);
         TMCoordinate tm = coordinateConversionService.convertLatLonToTM(lat, lon);
-
-        // 2. 기상청 날씨 서비스 호출
         Map<String, String> liveData = kmaWeatherService.fetchWeatherData("getUltraSrtNcst", xy.x(), xy.y());
         Map<String, String> forecastData = kmaWeatherService.fetchWeatherData("getUltraSrtFcst", xy.x(), xy.y());
-
-        log.info("liveData = {}", liveData);
-        log.info("forecastData = {}", forecastData);
-
-        // 3. 에어코리아 미세먼지 서비스 호출
         String stationName = airKoreaService.fetchNearestStationName(tm.x(), tm.y());
         Map<String, String> airQualityData = airKoreaService.fetchAirQualityData(stationName);
 
-
-        // 4. 모든 데이터 조합
         String tempValue = liveData.get("T1H");
         double temperature = (tempValue != null) ? Double.parseDouble(tempValue) : 0.0;
-
         String skyCode = forecastData.get("SKY");
         String condition = convertSkyCodeToCondition(skyCode);
-
         String airQualityGrade = airQualityData.get("pm10Grade1h");
         String airQuality = convertGradeToText(airQualityGrade);
 
         if (tempValue == null || skyCode == null || airQualityGrade == null) {
             throw DataNotFoundException.EXCEPTION;
         }
-
         return new WeatherResponseDto(temperature, condition, airQuality);
     }
 
@@ -99,22 +82,17 @@ public class WeatherService {
     }
 
     public WeatherDetailResponse getWeatherDetails(double lat, double lon) {
-        // 1. 좌표 변환
         XYCoordinate xy = coordinateConversionService.convertLatLonToXY(lat, lon);
         TMCoordinate tm = coordinateConversionService.convertLatLonToTM(lat, lon);
-        String location = reverseGeocodingService.getAddress(lat, lon); //예시 : 서울특별시 종로구
-        String areaCode = areaCodeService.getAreaCode(location).orElse("1100000000"); // 기본값: 서울
+        String location = reverseGeocodingService.getAddress(lat, lon);
+        String areaCode = areaCodeService.getAreaCode(location).orElse("1100000000");
 
-        // 2. 외부 API 병렬 또는 순차 호출
         Map<String, String> liveData = kmaWeatherService.fetchWeatherData("getUltraSrtNcst", xy.x(), xy.y());
         Map<String, String> forecastData = kmaWeatherService.fetchWeatherData("getUltraSrtFcst", xy.x(), xy.y());
         String stationName = airKoreaService.fetchNearestStationName(tm.x(), tm.y());
         Map<String, String> airQualityData = airKoreaService.fetchAirQualityData(stationName);
         String uvIndexValue = kmaLivingWeatherService.fetchUvIndex(areaCode);
 
-        log.info("forecastData : {}", forecastData.toString());
-
-        // 3. 데이터 조합 및 변환
         String tempValue = liveData.get("T1H");
         String windSpeedValue = liveData.get("WSD");
         String skyCode = forecastData.get("SKY");
@@ -122,12 +100,6 @@ public class WeatherService {
         String fineDustGrade = airQualityData.get("pm10Grade1h");
 
         if (tempValue == null || windSpeedValue == null || skyCode == null || ptyCode == null || fineDustGrade == null) {
-            log.info("tempValue :{}", tempValue);
-            log.info("windSpeedValue :{}", windSpeedValue);
-            log.info("skyCode :{}", skyCode);
-            log.info("ptyCode :{}", ptyCode);
-            log.info("fineDustGrade :{}", fineDustGrade);
-
             throw DataNotFoundException.EXCEPTION;
         }
 
@@ -146,16 +118,8 @@ public class WeatherService {
             case "3", "7" -> "+눈";
             default -> "";
         };
-        String skyCondition = switch (skyCode) {
-            case "1" -> "맑음";
-            case "3" -> "구름많음";
-            case "4" -> "흐림";
-            default -> "정보 없음";
-        };
-        if (!precipitation.isEmpty()) {
-            return "흐림" + precipitation;
-        }
-        return skyCondition + precipitation;
+        String skyCondition = convertSkyCodeToCondition(skyCode);
+        return skyCondition.equals("흐림") || !precipitation.isEmpty() ? "흐림" + precipitation : skyCondition;
     }
 
     private String convertUvGradeToText(String uvValue) {
@@ -172,231 +136,176 @@ public class WeatherService {
         }
     }
 
-    // 주간 날씨 메서드
-
     public List<WeeklyWeatherDto> getWeeklyWeather(double lat, double lon) {
-        List<WeeklyWeatherDto> weeklyForecast = new ArrayList<>();
+        String address = reverseGeocodingService.getAddress(lat, lon);
+        Map<String, String> airQualityForecast = getAirQualityForecast(address);
 
-        // --- 1. 오늘 ~ 3일 후 (Days 0-3) 데이터 생성 ---
         XYCoordinate xy = coordinateConversionService.convertLatLonToXY(lat, lon);
         List<Map<String, Object>> shortTermData = kmaWeatherService.fetchShortTermForecastData(xy.x(), xy.y());
-        weeklyForecast.addAll(parseShortTermForecast(shortTermData));
+        Map<String, List<Map<String, Object>>> shortTermGroupedByDay = shortTermData.stream()
+                .collect(Collectors.groupingBy(item -> (String) item.get("fcstDate")));
 
-        // --- 2. 4일 후 ~ 6일 후 데이터 생성 ---
-        String address = reverseGeocodingService.getAddress(lat, lon);
-        String landRegId = kmaMidTermRegionService.getLandRegionId(address)
-                .orElseThrow(() -> DataNotFoundException.EXCEPTION);
-        String tempRegId = kmaMidTermRegionService.getTempRegionId(address)
-                .orElseThrow(() -> DataNotFoundException.EXCEPTION);
-
+        String landRegId = kmaMidTermRegionService.getLandRegionId(address).orElseThrow(()->DataNotFoundException.EXCEPTION);
+        String tempRegId = kmaMidTermRegionService.getTempRegionId(address).orElseThrow(()->DataNotFoundException.EXCEPTION);
         String tmFc = calculateTmFc();
         Map<String, Object> midTermTempData = kmaMidTermWeatherService.fetchTemperatures(tempRegId, tmFc);
         Map<String, Object> midTermWeatherData = kmaMidTermWeatherService.fetchWeatherForecasts(landRegId, tmFc);
-        weeklyForecast.addAll(parseMidTermForecast(midTermTempData, midTermWeatherData, tmFc));
 
-        return weeklyForecast;
-    }
 
-    private List<WeeklyWeatherDto> parseShortTermForecast(List<Map<String, Object>> shortTermData) {
-        Map<String, List<Map<String, Object>>> groupedByDay = shortTermData.stream()
-                .collect(Collectors.groupingBy(item -> (String) item.get("fcstDate")));
 
-        List<WeeklyWeatherDto> shortTermForecast = new ArrayList<>();
+        List<WeeklyWeatherDto> weeklyForecast = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        for (int i = 0; i <= 3; i++) { // ✨ 0(오늘)부터 3(글피)까지 반복
+        for (int i = 0; i < 7; i++) {
             LocalDate date = today.plusDays(i);
-            String dateStr = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            List<Map<String, Object>> dayData = groupedByDay.get(dateStr);
+            String dateStrYyyyMmDd = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String dateStrYyyy_Mm_Dd = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String dayOfWeek = date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
+            String airQuality = airQualityForecast.getOrDefault(dateStrYyyy_Mm_Dd, "높음").equals("높음") ? "나쁨" : "좋음";
 
-            if (dayData == null) continue;
 
+            String weatherAm, weatherPm;
             int tempMin, tempMax;
 
-            if (i == 0) { // '오늘'은 TMP에서 직접 계산
+            if (i < 3) { // 오늘, 내일, 모레: 단기 예보 사용
+                List<Map<String, Object>> dayData = shortTermGroupedByDay.get(dateStrYyyyMmDd);
+                if (dayData == null) continue;
+
+                final boolean isToday = (i == 0);
                 tempMin = dayData.stream()
-                        .filter(item -> "TMP".equals(item.get("category")))
+                        .filter(item -> "TMN".equals(item.get("category")) || (isToday && "TMP".equals(item.get("category"))))
                         .mapToInt(item -> (int) Double.parseDouble((String) item.get("fcstValue")))
                         .min().orElse(Integer.MAX_VALUE);
                 tempMax = dayData.stream()
-                        .filter(item -> "TMP".equals(item.get("category")))
+                        .filter(item -> "TMX".equals(item.get("category")) || (isToday && "TMP".equals(item.get("category"))))
                         .mapToInt(item -> (int) Double.parseDouble((String) item.get("fcstValue")))
                         .max().orElse(Integer.MIN_VALUE);
-            } else { // '내일' 부터는 TMN/TMX 값 사용
-                tempMin = dayData.stream()
-                        .filter(item -> "TMN".equals(item.get("category")))
-                        .mapToInt(item -> (int) Double.parseDouble((String) item.get("fcstValue")))
-                        .findFirst().orElse(Integer.MAX_VALUE);
-                tempMax = dayData.stream()
-                        .filter(item -> "TMX".equals(item.get("category")))
-                        .mapToInt(item -> (int) Double.parseDouble((String) item.get("fcstValue")))
-                        .findFirst().orElse(Integer.MIN_VALUE);
+
+                weatherAm = getWeatherStatusFromShortTerm(dayData, 9, 12);
+                weatherPm = getWeatherStatusFromShortTerm(dayData, 13, 18);
+            } else { // 3일 후부터: 중기 예보 사용
+                Object tempMinObj = midTermTempData.get("taMin" + (i+1));
+                Object tempMaxObj = midTermTempData.get("taMax" + (i+1) );
+                Object weatherAmObj = midTermWeatherData.get("wf" + (i+1) + "Am");
+                Object weatherPmObj = midTermWeatherData.get("wf" + (i+1) + "Pm");
+
+
+
+                if (tempMinObj == null || tempMaxObj == null || weatherAmObj == null || weatherPmObj == null) continue;
+
+                tempMin = ((Number) tempMinObj).intValue();
+                tempMax = ((Number) tempMaxObj).intValue();
+                weatherAm = (String) weatherAmObj;
+                weatherPm = (String) weatherPmObj;
             }
 
-            String weatherAm = getWeatherStatusFromShortTerm(dayData, 9, 12);
-            String weatherPm = getWeatherStatusFromShortTerm(dayData, 13, 18);
 
-            shortTermForecast.add(new WeeklyWeatherDto(
-                    date.toString(),
-                    date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN),
-                    weatherAm,
-                    weatherPm,
-                    tempMin,
-                    tempMax
-            ));
+
+
+
+            weeklyForecast.add(new WeeklyWeatherDto(date.toString(), dayOfWeek, weatherAm, weatherPm, tempMin, tempMax, airQuality));
         }
-        return shortTermForecast;
+        return weeklyForecast;
     }
 
-    // 단기예보의 시간대별 날씨를 대표 날씨로 변환하는 헬퍼
+    private Map<String, String> getAirQualityForecast(String address) {
+        Map<String, String> forecast = new HashMap<>();
+        String region = getRegionForAirForecast(address);
+
+        List<Map<String, Object>> shortTerm = airKoreaService.fetchMinuDustFrcstDspth();
+        for (Map<String, Object> item : shortTerm) {
+            String date = (String) item.get("informData");
+            String gradeStr = (String) item.get("informGrade");
+            forecast.put(date, parseAirQualityGrade(gradeStr, region));
+        }
+
+
+        List<Map<String, Object>> weekly = airKoreaService.fetchMinuDustWeekFrcstDspth();
+
+        if (weekly != null && !weekly.isEmpty()) {
+            Map<String, Object> item = weekly.get(0);
+            forecast.put((String) item.get("frcstOneDt"), parseAirQualityGrade((String) item.get("frcstOneCn"), region));
+            forecast.put((String) item.get("frcstTwoDt"), parseAirQualityGrade((String) item.get("frcstTwoCn"), region));
+            forecast.put((String) item.get("frcstThreeDt"), parseAirQualityGrade((String) item.get("frcstThreeCn"), region));
+            forecast.put((String) item.get("frcstFourDt"), parseAirQualityGrade((String) item.get("frcstFourCn"), region));
+        }
+
+        log.info("Air quality forecast: {}", forecast);
+
+
+        return forecast;
+    }
+
+    private String getRegionForAirForecast(String address) {
+        if (address == null) return "서울";
+        if (address.startsWith("서울")) return "서울";
+        if (address.startsWith("인천")) return "인천";
+        if (address.startsWith("경기")) return "경기남부";
+        if (address.startsWith("강원")) return "영서";
+        if (address.startsWith("대전")) return "대전";
+        if (address.startsWith("세종")) return "세종";
+        if (address.startsWith("충남")) return "충남";
+        if (address.startsWith("충북")) return "충북";
+        if (address.startsWith("광주")) return "광주";
+        if (address.startsWith("전북")) return "전북";
+        if (address.startsWith("전남")) return "전남";
+        if (address.startsWith("부산")) return "부산";
+        if (address.startsWith("대구")) return "대구";
+        if (address.startsWith("울산")) return "울산";
+        if (address.startsWith("경북")) return "경북";
+        if (address.startsWith("경남")) return "경남";
+        if (address.startsWith("제주")) return "제주";
+        return "서울";
+    }
+
+    private String parseAirQualityGrade(String gradeStr, String region) {
+        if (gradeStr == null || region == null) return "정보 없음";
+        Pattern pattern = Pattern.compile(region + "\\s*:\\s*([^,]+)");
+        Matcher matcher = pattern.matcher(gradeStr);
+        return matcher.find() ? matcher.group(1).trim() : "정보 없음";
+    }
+
     private String getWeatherStatusFromShortTerm(List<Map<String, Object>> dayData, int startHour, int endHour) {
-        // 강수(PTY) 예보를 SKY(하늘상태)보다 우선적으로 확인
         Optional<String> precipitationOpt = dayData.stream()
                 .filter(item -> "PTY".equals(item.get("category")) && !"0".equals(item.get("fcstValue")))
-                .filter(item -> {
-                    int hour = Integer.parseInt((String) item.get("fcstTime")) / 100;
-                    return hour >= startHour && hour <= endHour;
-                })
-                .findFirst() // 시간대 중 가장 먼저 나타나는 강수 현상을 기준으로 함
-                .map(item -> {
-                    // 단기예보 PTY 코드: 없음(0), 비(1), 비/눈(2), 눈(3), 소나기(4)
-                    return switch ((String) item.get("fcstValue")) {
-                        case "1" -> "흐림+비";
-                        case "2" -> "흐림+비/눈";
-                        case "3" -> "흐림+눈";
-                        case "4" -> "흐림+소나기";
-                        default -> "흐림";
-                    };
+                .filter(item -> { int hour = Integer.parseInt((String) item.get("fcstTime")) / 100; return hour >= startHour && hour <= endHour; })
+                .findFirst()
+                .map(item -> switch ((String) item.get("fcstValue")) {
+                    case "1", "2", "4" -> "흐림+비";
+                    case "3" -> "흐림+눈";
+                    default -> "흐림";
                 });
 
-        // 강수 예보가 있으면 그것을 반환, 없으면 하늘 상태로 날씨 결정
         return precipitationOpt.orElseGet(() -> dayData.stream()
                 .filter(item -> "SKY".equals(item.get("category")))
-                .filter(item -> {
-                    int hour = Integer.parseInt((String) item.get("fcstTime")) / 100;
-                    return hour >= startHour && hour <= endHour;
-                })
+                .filter(item -> { int hour = Integer.parseInt((String) item.get("fcstTime")) / 100; return hour >= startHour && hour <= endHour; })
                 .collect(Collectors.groupingBy(item -> (String) item.get("fcstValue"), Collectors.counting()))
-                .entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(entry -> convertSkyCodeToCondition(entry.getKey()))
-                .orElse("맑음"));
+                .entrySet().stream().max(Map.Entry.comparingByValue())
+                .map(entry -> convertSkyCodeToCondition(entry.getKey())).orElse("맑음"));
     }
-
-
-    private List<WeeklyWeatherDto> parseMidTermForecast(Map<String, Object> tempData, Map<String, Object> weatherData, String tmFc) {
-        List<WeeklyWeatherDto> midTermForecast = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-
-        int startDay = 4;
-
-        // 6일 후까지의 데이터만 필요
-        for (int i = startDay; i <= 6; i++) {
-            LocalDate forecastDate = today.plusDays(i);
-            Object tempMin = tempData.get("taMin" + i);
-            Object tempMax = tempData.get("taMax" + i);
-            Object weatherAm = weatherData.get("wf" + i + "Am");
-            Object weatherPm = weatherData.get("wf" + i + "Pm");
-
-            if (tempMin == null || tempMax == null || weatherAm == null || weatherPm == null) continue;
-
-            midTermForecast.add(new WeeklyWeatherDto(
-                    forecastDate.toString(),
-                    forecastDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN),
-                    (String) weatherAm,
-                    (String) weatherPm,
-                    ((Number) tempMin).intValue(),
-                    ((Number) tempMax).intValue()
-            ));
-        }
-        return midTermForecast;
-    }
-
-
 
     private String calculateTmFc() {
         LocalDateTime now = LocalDateTime.now();
         int hour = now.getHour();
         String baseDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-        if (hour < 6) {
-            return now.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "1800";
-        } else if (hour < 18) {
-            return baseDate + "0600";
-        } else {
-            return baseDate + "1800";
-        }
+        if (hour < 6) return now.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "0600";
+        if (hour < 18) return baseDate + "0600";
+        return baseDate + "1800";
     }
 
-
-    /**
-     * 사용자의 저장된 지역(destination) 기준으로 상세 날씨 정보를 조회합니다. (개선된 버전)
-     */
     public WeatherDetailResponse getWeatherDetailsByDestination(Long userId) {
-        // 1. 사용자 ID로 'destination' 조회
         User user = userService.getUser(userId);
         String destination = user.getDestination();
-
-        if (destination == null || destination.isBlank()) {
-            throw InvalidDestinationException.EXCEPTION;
-        }
-
-        // 2. 'destination'을 좌표로 변환 (날씨 API 호출에 필요)
+        if (destination == null || destination.isBlank()) throw InvalidDestinationException.EXCEPTION;
         LatLon coords = geocodingService.getCoordinates(destination);
-
-        // --- getWeatherDetails(lat, lon)의 로직을 직접 적용 ---
-        // 3. 좌표 변환 (기상청, 에어코리아 API용)
-        XYCoordinate xy = coordinateConversionService.convertLatLonToXY(coords.lat(), coords.lon());
-        TMCoordinate tm = coordinateConversionService.convertLatLonToTM(coords.lat(), coords.lon());
-
-        // 4. 지역 코드 조회 (ReverseGeocoding 없이 바로 destination 사용!)
-        String areaCode = areaCodeService.getAreaCode(destination).orElse("1100000000"); // 기본값: 서울
-
-        // 5. 외부 API 호출
-        Map<String, String> liveData = kmaWeatherService.fetchWeatherData("getUltraSrtNcst", xy.x(), xy.y());
-        Map<String, String> forecastData = kmaWeatherService.fetchWeatherData("getUltraSrtFcst", xy.x(), xy.y());
-        String stationName = airKoreaService.fetchNearestStationName(tm.x(), tm.y());
-        Map<String, String> airQualityData = airKoreaService.fetchAirQualityData(stationName);
-        String uvIndexValue = kmaLivingWeatherService.fetchUvIndex(areaCode);
-
-        // 6. 데이터 조합 및 변환
-        String tempValue = liveData.get("T1H");
-        String windSpeedValue = liveData.get("WSD");
-        String skyCode = forecastData.get("SKY");
-        String ptyCode = forecastData.get("PTY");
-        String fineDustGrade = airQualityData.get("pm10Grade1h");
-
-        if (tempValue == null || windSpeedValue == null || skyCode == null || ptyCode == null || fineDustGrade == null) {
-            throw DataNotFoundException.EXCEPTION;
-        }
-
-        double temperature = Double.parseDouble(tempValue);
-        String windSpeed = windSpeedValue + "m/s";
-        String weather = combineWeatherConditions(skyCode, ptyCode);
-        String fineDust = convertGradeToText(fineDustGrade);
-        String uvIndex = convertUvGradeToText(uvIndexValue);
-
-        // destination을 location으로 사용
-        return new WeatherDetailResponse(destination, temperature, weather, windSpeed, fineDust, uvIndex);
+        return getWeatherDetails(coords.lat(), coords.lon());
     }
 
-    /**
-     * 사용자의 저장된 지역(destination) 기준으로 주간 날씨 정보를 조회합니다. (개선된 버전)
-     */
     public List<WeeklyWeatherDto> getWeeklyWeatherByDestination(Long userId) {
-        // 1. 사용자 ID로 'destination' 조회
         User user = userService.getUser(userId);
         String destination = user.getDestination();
-
-        if (destination == null || destination.isBlank()) {
-            throw InvalidDestinationException.EXCEPTION;
-        }
-
-        // 2. 'destination'을 좌표로 변환 (날씨 API 호출에 필요)
+        if (destination == null || destination.isBlank()) throw InvalidDestinationException.EXCEPTION;
         LatLon coords = geocodingService.getCoordinates(destination);
-
-        // 3. 변환된 좌표로 기존 주간 날씨 조회 메서드 호출 (이 메서드는 내부에서 ReverseGeocoding을 다시 하므로, 장기적으로는 이 부분도 개선하는 것이 좋습니다)
-        // 우선은 getWeatherDetailsByDestination처럼 로직을 개선하는 것이 핵심입니다.
         return getWeeklyWeather(coords.lat(), coords.lon());
     }
 }

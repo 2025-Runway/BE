@@ -62,6 +62,16 @@ public class CourseService {
         return CourseDto.from(c);
     }
 
+    public CourseDetailDto getCourseDetail(Long userId, String crsIdx) {
+        Course c = courseRepository.findById(crsIdx)
+                .orElseThrow(() -> CourseFailed.Exception);
+        boolean isFavorite = false;
+        if (userId != null) {
+            isFavorite = favoriteRepository.existsByUser_IdAndCourse_CrsIdx(userId, crsIdx);
+        }
+        return CourseDetailDto.of(c, isFavorite);
+    }
+
     /**
      * 사용자의 마지막 코스 조회 기록을 업데이트하는 메소드
      */

@@ -47,7 +47,6 @@ public class KmaMidTermWeatherService {
             Map<String, Object> responseMap = restTemplate.getForObject(uri, Map.class);
             // API 응답 구조가 복잡하여 item 리스트의 첫번째 요소(Map)를 바로 반환
 
-            log.info("responseMap: {}", responseMap);
             Map<String, Object> response = (Map<String, Object>) responseMap.get("response");
             Map<String, Object> body = (Map<String, Object>) response.get("body");
             Map<String, Object> items = (Map<String, Object>) body.get("items");

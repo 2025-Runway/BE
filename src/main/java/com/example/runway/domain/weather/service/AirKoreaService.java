@@ -1,7 +1,6 @@
 package com.example.runway.domain.weather.service;
 
 import com.example.runway.domain.weather.config.WeatherConfig.AirKoreaApiProperties;
-import com.example.runway.domain.weather.config.WeatherConfig.WeatherApiProperties;
 import com.example.runway.domain.weather.exception.AirKoreaApiFailedException;
 import com.example.runway.domain.weather.exception.StationNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +70,60 @@ public class AirKoreaService {
             throw AirKoreaApiFailedException.EXCEPTION;
         }
     }
+
+    public List<Map<String, Object>> fetchMinuDustFrcstDspth() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate searchDate = now.toLocalDate();
+        // 오전 5시 이전에 조회하면 전날 데이터를 사용
+        if (now.getHour() < 5) {
+            searchDate = searchDate.minusDays(1);
+        }
+
+        String searchDateStr = searchDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        URI uri = UriComponentsBuilder
+                .fromUriString(airKoreaApiProperties.dataUrl() + "/getMinuDustFrcstDspth")
+                .queryParam("serviceKey", airKoreaApiProperties.serviceKey())
+                .queryParam("returnType", "json")
+                .queryParam("searchDate", searchDateStr)
+                .queryParam("informCode", "PM10")
+                .build(true).toUri();
+
+        try {
+            Map<String, Object> responseMap = restTemplate.getForObject(uri, Map.class);
+            return extractItems(responseMap);
+        } catch (Exception e) {
+            log.error("Failed to fetch air quality forecast.", e);
+            throw AirKoreaApiFailedException.EXCEPTION;
+        }
+    }
+
+    public List<Map<String, Object>> fetchMinuDustWeekFrcstDspth() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate searchDate = now.toLocalDate();
+        // 주간 예보는 17시 30분에 발표되므로, 18시 이전에 조회하면 전날 데이터를 사용
+        if (now.getHour() < 18) {
+            searchDate = searchDate.minusDays(1);
+        }
+
+        String searchDateStr = searchDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        URI uri = UriComponentsBuilder
+                .fromUriString(airKoreaApiProperties.dataUrl() + "/getMinuDustWeekFrcstDspth")
+                .queryParam("serviceKey", airKoreaApiProperties.serviceKey())
+                .queryParam("returnType", "json")
+                .queryParam("searchDate", searchDateStr)
+                .build(true).toUri();
+
+        try {
+            Map<String, Object> responseMap = restTemplate.getForObject(uri, Map.class);
+
+            log.info("responseMap!!: {}", responseMap);
+            return extractItems(responseMap);
+        } catch (Exception e) {
+            log.error("Failed to fetch weekly air quality forecast.", e);
+            throw AirKoreaApiFailedException.EXCEPTION;
+        }
+    }
+
 
     private Map<String, String> parseAirKoreaData(Map<String, Object> responseMap) {
         List<Map<String, Object>> itemList = extractItems(responseMap);

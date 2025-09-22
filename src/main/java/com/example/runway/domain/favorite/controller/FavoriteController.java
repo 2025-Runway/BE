@@ -45,4 +45,18 @@ public class FavoriteController {
         return favoriteService.getFavoriteCourseList(userId);
     }
 
+    @DeleteMapping("/{crsIdx}/favorite")
+    @Operation(
+            summary = "코스 찜 삭제",
+            description = "코스 인덱스로 유저 찜 삭제"
+    )
+    public void deleteFavorite(
+            @Parameter(description = "유저 아이디", example = "2")
+            @LoginUserId Long userId,
+            @Parameter(description = "코스 인덱스", example = "T_CRS_MNG0000005196")
+            @PathVariable("crsIdx") String crsIdx
+    ) {
+        favoriteService.deleteFavorite(userId, crsIdx);
+    }
+
 }
