@@ -4,6 +4,7 @@ import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.favorite.entity.Favorite;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,4 +15,6 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
             "FROM Favorite f WHERE f.user.id = :userId")
     List<Course> findCourseByUserId(Long userId);
 
+    @Transactional
+    void deleteByUser_IdAndCourse_CrsIdx(Long userId, String crsIdx);
 }

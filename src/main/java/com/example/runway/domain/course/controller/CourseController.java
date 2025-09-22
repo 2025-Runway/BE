@@ -37,7 +37,7 @@ public class CourseController {
             description = "코스 상세 정보를 조회. 로그인 시 찜 여부 확인"
     )
     public CourseDetailDto getCourse(
-            @Parameter(description = "유저 아이디(비로그인 시 없어도 됨)", example = "2")
+            @Parameter(description = "유저 아이디", example = "2")
             @LoginUserId(required = false) Long userId,
             @PathVariable String crsIdx
     ) {

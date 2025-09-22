@@ -49,6 +49,10 @@ public class FavoriteService {
         favoriteRepository.save(fav);
     }
 
+    public void deleteFavorite(Long userId, String crsIdx) {
+        favoriteRepository.deleteByUser_IdAndCourse_CrsIdx(userId, crsIdx);
+    }
+
     public List<FavoriteList> getFavoriteCourseList(
             Long userId
     ) {
