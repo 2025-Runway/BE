@@ -15,7 +15,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public enum CourseErrorCode implements BaseErrorCode {
 
     CourseNotFound(NOT_FOUND, "Course_404_1", "코스를 찾지 못하였습니다."),
-    PopularCourseNotFound(NOT_FOUND, "Course_404_2", "인기 코스 데이터가 충분하지 않습니다.");
+    PopularCourseNotFound(NOT_FOUND, "Course_404_2", "인기 코스 데이터가 충분하지 않습니다."),
+    GeminiError(NOT_FOUND,"Course_404_3","Gemini 호출 중 문제가 발생하였습니다.");
 
 
 

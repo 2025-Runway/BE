@@ -3,6 +3,7 @@ package com.example.runway.domain.course.service;
 import com.example.runway.domain.course.dto.*;
 import com.example.runway.domain.course.entity.Course;
 import com.example.runway.domain.course.error.CourseFailed;
+import com.example.runway.domain.course.error.GeminiError;
 import com.example.runway.domain.course.error.PopularCourseNotFound;
 import com.example.runway.domain.course.repository.CourseRepository;
 import com.example.runway.domain.favorite.repository.FavoriteRepository;
@@ -150,16 +151,16 @@ public class CourseService {
      */
     public CourseAnalysisDto getCourseAnalysisById(String crsIdx) {
         Course course = courseRepository.findByCrsIdx(crsIdx)
-                .orElseThrow(() -> new IllegalArgumentException("해당 코스를 찾을 수 없습니다. id=" + crsIdx));
+                .orElseThrow(()->CourseFailed.Exception);
 
         try {
             String jsonResponse = geminiService.generateCourseAnalysis(course);
 
             return objectMapper.readValue(jsonResponse, CourseAnalysisDto.class);
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("AI 코스 분석 중 오류가 발생했습니다.");
+            throw GeminiError.Exception;
         }
     }
 
