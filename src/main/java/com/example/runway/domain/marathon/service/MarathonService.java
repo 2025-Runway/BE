@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -39,7 +40,9 @@ public class MarathonService {
         Marathon marathon = marathonRepository.findById(marathonId)
                 .orElseThrow(() -> NotFoundCourse.EXCEPTION);
         List<Price> prices = marathonTypeRepository.findByMarathon(marathon)
-                .stream().map(Price::from)
+                .stream()
+                .map(Price::from)
+                .sorted(Comparator.comparingInt(p -> Integer.parseInt(p.getPrice().replaceAll("[^0-9]", ""))))
                 .toList();
 
         List<CourseInfo> infos = marathonCourseRepository.findCourseByMarathonId(marathonId, PageRequest.of(0, 5))
