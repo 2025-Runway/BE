@@ -7,7 +7,7 @@ public class GeminiError extends BaseErrorException {
     public static final GeminiError Exception = new GeminiError();
 
     public GeminiError() {
-        super(CourseErrorCode.CourseNotFound);
+        super(CourseErrorCode.GeminiError);
     }
 }
 
