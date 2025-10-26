@@ -5,7 +5,11 @@ import com.example.runway.domain.user.service.UserService;
 import com.example.runway.domain.weather.dto.WeatherDetailResponse;
 import com.example.runway.domain.weather.dto.WeatherResponseDto;
 import com.example.runway.domain.weather.dto.WeeklyWeatherDto;
+import com.example.runway.domain.weather.exception.DataNotFoundException;
 import com.example.runway.domain.weather.exception.InvalidDestinationException;
+import com.example.runway.domain.weather.service.CoordinateConversionService.TMCoordinate;
+import com.example.runway.domain.weather.service.CoordinateConversionService.XYCoordinate;
+import com.example.runway.domain.weather.service.GeocodingService.LatLon;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,9 +26,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WeatherService {
+public class WeatherService2 {
 
-    // API 서비스 의존성 (현재 사용 안 함)
     private final CoordinateConversionService coordinateConversionService;
     private final KmaWeatherService kmaWeatherService;
     private final AirKoreaService airKoreaService;
@@ -36,12 +39,7 @@ public class WeatherService {
     private final GeocodingService geocodingService;
     private final UserService userService;
 
-    /**
-     * 첫 화면 날씨 API (하드코딩)
-     */
     public WeatherResponseDto getWeather(double lat, double lon) {
-        // API 호출 로직 전체 주석 처리
-        /*
         XYCoordinate xy = coordinateConversionService.convertLatLonToXY(lat, lon);
         TMCoordinate tm = coordinateConversionService.convertLatLonToTM(lat, lon);
         Map<String, String> liveData = kmaWeatherService.fetchWeatherData("getUltraSrtNcst", xy.x(), xy.y());
@@ -60,10 +58,6 @@ public class WeatherService {
             throw DataNotFoundException.EXCEPTION;
         }
         return new WeatherResponseDto(temperature, condition, airQuality);
-        */
-
-        // 하드코딩된 데이터 반환
-        return new WeatherResponseDto(11.0, "흐림", "나쁨");
     }
 
     private String convertSkyCodeToCondition(String skyCode) {
@@ -87,18 +81,11 @@ public class WeatherService {
         };
     }
 
-    /**
-     * 오늘 날씨 상세 API (하드코딩)
-     */
     public WeatherDetailResponse getWeatherDetails(double lat, double lon) {
-        // API 호출 로직 전체 주석 처리
-        /*
         XYCoordinate xy = coordinateConversionService.convertLatLonToXY(lat, lon);
         TMCoordinate tm = coordinateConversionService.convertLatLonToTM(lat, lon);
-        */
         String location = reverseGeocodingService.getAddress(lat, lon);
-//        String areaCode = areaCodeService.getAreaCode(location).orElse("1100000000");
-        /*
+        String areaCode = areaCodeService.getAreaCode(location).orElse("1100000000");
 
         Map<String, String> liveData = kmaWeatherService.fetchWeatherData("getUltraSrtNcst", xy.x(), xy.y());
         Map<String, String> forecastData = kmaWeatherService.fetchWeatherData("getUltraSrtFcst", xy.x(), xy.y());
@@ -123,12 +110,6 @@ public class WeatherService {
         String uvIndex = convertUvGradeToText(uvIndexValue);
 
         return new WeatherDetailResponse(location, temperature, weather, windSpeed, fineDust, uvIndex);
-        */
-
-        log.info("location : " + location);
-
-        // 하드코딩된 데이터 반환
-        return new WeatherDetailResponse(location, 11.0, "흐림", "1.5m/s", "나쁨", "보통");
     }
 
     private String combineWeatherConditions(String skyCode, String ptyCode) {
@@ -155,14 +136,7 @@ public class WeatherService {
         }
     }
 
-    /**
-     * 주간 날씨 API (하드코딩)
-     */
     public List<WeeklyWeatherDto> getWeeklyWeather(double lat, double lon) {
-        // [Start of Hardcoded Data Block]
-        // -----------------------------------------------------------------
-        // API 호출 임시 주석 처리 (사용자 요청)
-        /*
         String address = reverseGeocodingService.getAddress(lat, lon);
         Map<String, String> airQualityForecast = getAirQualityForecast(address);
 
@@ -176,99 +150,10 @@ public class WeatherService {
         String tmFc = calculateTmFc();
         Map<String, Object> midTermTempData = kmaMidTermWeatherService.fetchTemperatures(tempRegId, tmFc);
         Map<String, Object> midTermWeatherData = kmaMidTermWeatherService.fetchWeatherForecasts(landRegId, tmFc);
-        */
+
+
 
         List<WeeklyWeatherDto> weeklyForecast = new ArrayList<>();
-        LocalDate today = LocalDate.now(); // ex: 2025-10-26 (일)
-
-        // 하드코딩된 날씨 데이터 (이미지 기반)
-        // 1. (10.26)
-        LocalDate date0 = today.plusDays(0);
-        weeklyForecast.add(new WeeklyWeatherDto(
-                date0.toString(), // "2025-10-26"
-                date0.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN), // "일"
-                "흐림",  // 오전 날씨
-                "구름많음", // 오후 날씨
-                11,      // 최저
-                15,      // 최고
-                "보통"   // 미세먼지 (기존 로직 기본값)
-        ));
-
-        // 2. (10.27)
-        LocalDate date1 = today.plusDays(1);
-        weeklyForecast.add(new WeeklyWeatherDto(
-                date1.toString(), // "2025-10-27"
-                date1.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN), // "월"
-                "맑음",  // 오전 날씨
-                "맑음", // 오후 날씨
-                3,       // 최저
-                11,      // 최고
-                "보통"   // 미세먼지
-        ));
-
-        // 3. (10.28)
-        LocalDate date2 = today.plusDays(2);
-        weeklyForecast.add(new WeeklyWeatherDto(
-                date2.toString(), // "2025-10-28"
-                date2.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN), // "화"
-                "맑음",  // 오전 날씨
-                "맑음", // 오후 날씨
-                1,       // 최저
-                12,      // 최고
-                "보통"   // 미세먼지
-        ));
-
-        // 4. (10.29)
-        LocalDate date3 = today.plusDays(3);
-        weeklyForecast.add(new WeeklyWeatherDto(
-                date3.toString(), // "2025-10-29"
-                date3.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN), // "수"
-                "구름많음", // 오전 날씨
-                "맑음",   // 오후 날씨
-                7,       // 최저
-                16,      // 최고
-                "보통"   // 미세먼지
-        ));
-
-        // 5. (10.30)
-        LocalDate date4 = today.plusDays(4);
-        weeklyForecast.add(new WeeklyWeatherDto(
-                date4.toString(), // "2025-10-30"
-                date4.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN), // "목"
-                "구름많음", // 오전 날씨
-                "흐림",   // 오후 날씨
-                9,       // 최저
-                18,      // 최고
-                "보통"   // 미세먼지
-        ));
-
-        // 6. (10.31)
-        LocalDate date5 = today.plusDays(5);
-        weeklyForecast.add(new WeeklyWeatherDto(
-                date5.toString(), // "2025-10-31"
-                date5.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN), // "금"
-                "흐림",  // 오전 날씨
-                "흐림+비", // 오후 날씨
-                12,      // 최저
-                18,      // 최고
-                "보통"   // 미세먼지
-        ));
-
-        // 7. (11.01)
-        LocalDate date6 = today.plusDays(6);
-        weeklyForecast.add(new WeeklyWeatherDto(
-                date6.toString(), // "2025-11-01"
-                date6.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN), // "토"
-                "구름많음", // 오전 날씨
-                "구름많음", // 오후 날씨
-                10,      // 최저
-                16,      // 최고
-                "보통"   // 미세먼지
-        ));
-
-
-        // 기존 API 처리 로직 주석 처리
-        /*
         LocalDate today = LocalDate.now();
 
         for (int i = 0; i < 7; i++) {
@@ -320,9 +205,6 @@ public class WeatherService {
 
             weeklyForecast.add(new WeeklyWeatherDto(date.toString(), dayOfWeek, weatherAm, weatherPm, tempMin, tempMax, airQuality));
         }
-        */
-        // [End of Hardcoded Data Block]
-        // -----------------------------------------------------------------
         return weeklyForecast;
     }
 
@@ -411,33 +293,19 @@ public class WeatherService {
         return baseDate + "1800";
     }
 
-    /**
-     * 사용자 설정 지역 날씨 상세 API (getWeatherDetails 호출)
-     */
     public WeatherDetailResponse getWeatherDetailsByDestination(Long userId) {
-        // API 호출 로직 주석 처리
-
-        User user = userService.getUser(userId);
-        String destination = user.getDestination();
-        if (destination == null || destination.isBlank()) throw InvalidDestinationException.EXCEPTION;
-        GeocodingService.LatLon coords = geocodingService.getCoordinates(destination);
-
-        // 하드코딩된 getWeatherDetails(0,0) 호출
-        return getWeatherDetails(coords.lat(), coords.lon());
-    }
-
-    /**
-     * 사용자 설정 지역 주간 날씨 API (getWeeklyWeather 호출)
-     */
-    public List<WeeklyWeatherDto> getWeeklyWeatherByDestination(Long userId) {
-        // API 호출 로직 주석 처리
-        /*
         User user = userService.getUser(userId);
         String destination = user.getDestination();
         if (destination == null || destination.isBlank()) throw InvalidDestinationException.EXCEPTION;
         LatLon coords = geocodingService.getCoordinates(destination);
-        */
-        // 하드코딩된 getWeeklyWeather(0,0) 호출
-        return getWeeklyWeather(0, 0);
+        return getWeatherDetails(coords.lat(), coords.lon());
+    }
+
+    public List<WeeklyWeatherDto> getWeeklyWeatherByDestination(Long userId) {
+        User user = userService.getUser(userId);
+        String destination = user.getDestination();
+        if (destination == null || destination.isBlank()) throw InvalidDestinationException.EXCEPTION;
+        LatLon coords = geocodingService.getCoordinates(destination);
+        return getWeeklyWeather(coords.lat(), coords.lon());
     }
 }
