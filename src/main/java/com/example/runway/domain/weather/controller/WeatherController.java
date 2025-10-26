@@ -5,6 +5,7 @@ import com.example.runway.domain.weather.dto.WeatherDetailResponse;
 import com.example.runway.domain.weather.dto.WeatherResponseDto;
 import com.example.runway.domain.weather.dto.WeeklyWeatherDto;
 import com.example.runway.domain.weather.service.WeatherService;
+import com.example.runway.domain.weather.service.WeatherService2;
 import com.example.runway.global.jwt.annotation.LoginUserId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
